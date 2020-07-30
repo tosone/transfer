@@ -1,0 +1,67 @@
+# github.com/andybalholm/brotli v1.0.0
+github.com/andybalholm/brotli
+# github.com/cheggaaa/pb/v3 v3.0.4
+## explicit
+# github.com/fatih/color v1.9.0
+## explicit
+github.com/fatih/color
+# github.com/fsnotify/fsnotify v1.4.9
+## explicit
+# github.com/gofiber/fiber v1.13.3
+## explicit
+github.com/gofiber/fiber
+# github.com/gofiber/utils v0.0.9
+github.com/gofiber/utils
+github.com/gofiber/utils/memory
+# github.com/gorilla/schema v1.1.0
+github.com/gorilla/schema
+# github.com/klauspost/compress v1.10.10
+## explicit
+github.com/klauspost/compress/flate
+github.com/klauspost/compress/gzip
+github.com/klauspost/compress/zlib
+# github.com/mattn/go-colorable v0.1.7
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.9
+## explicit
+# github.com/qiniu/api.v7 v7.2.5+incompatible
+## explicit
+# github.com/qiniu/api.v7/v7 v7.5.0
+## explicit
+github.com/qiniu/api.v7/v7
+github.com/qiniu/api.v7/v7/auth
+github.com/qiniu/api.v7/v7/auth/qbox
+github.com/qiniu/api.v7/v7/client
+github.com/qiniu/api.v7/v7/conf
+github.com/qiniu/api.v7/v7/internal/log
+github.com/qiniu/api.v7/v7/reqid
+github.com/qiniu/api.v7/v7/storage
+# github.com/revel/cmd v1.0.3
+## explicit
+# github.com/revel/config v1.0.0
+## explicit
+# github.com/tosone/logging v1.1.0
+## explicit
+github.com/tosone/logging
+# github.com/valyala/bytebufferpool v1.0.0
+github.com/valyala/bytebufferpool
+# github.com/valyala/fasthttp v1.15.1
+github.com/valyala/fasthttp
+github.com/valyala/fasthttp/fasthttputil
+github.com/valyala/fasthttp/reuseport
+github.com/valyala/fasthttp/stackless
+# github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a
+github.com/valyala/tcplisten
+# golang.org/x/net v0.0.0-20200707034311-ab3426394381
+## explicit
+# golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1
+## explicit
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/tools v0.0.0-20200729194436-6467de6f59a7
+## explicit
+# gopkg.in/natefinch/lumberjack.v2 v2.0.0
+gopkg.in/natefinch/lumberjack.v2
