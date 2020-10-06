@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  transfer:
+    image: transfer:dev
+    container_name: transfer
+    hostname: transfer
+    restart: always
+    build: $PWD
+    ports:
+      - 3000:3000
