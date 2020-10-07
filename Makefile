@@ -1,5 +1,5 @@
-app_name                = transfer
-Target                  = ${app_name}
+app_name = transfer
+Target   = ${app_name}
 
 .PHONY: build
 build:
@@ -7,7 +7,7 @@ build:
 
 .PHONY: release
 release:
-	go build -v -o release/${Target}${Suffix} -tags=jsoniter -ldflags "-s -w"
+	go build -v -o release/${Target}${Suffix} -ldflags "-s -w"
 
 .PHONY: lint
 lint:

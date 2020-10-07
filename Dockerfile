@@ -1,6 +1,6 @@
 FROM golang:alpine AS BUILD
 
-ARG PKG=/go/src/github.com/tosone/transfer
+ARG PKG=/go/src/transfer
 
 WORKDIR ${PKG}
 
