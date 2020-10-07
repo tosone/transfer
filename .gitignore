@@ -1,3 +1,5 @@
 release/
+.idea/
 
 *.db
+*.yaml
