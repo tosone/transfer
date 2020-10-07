@@ -10,10 +10,9 @@ import (
 	"strconv"
 	"time"
 
-	"gorm.io/gorm"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/tosone/logging"
+	"gorm.io/gorm"
 )
 
 type Content struct {
@@ -42,7 +41,7 @@ type Response struct {
 }
 
 func main() {
-	var app = fiber.New(fiber.Config{Prefork: true})
+	var app = fiber.New()
 
 	app.Get("/status", func(c *fiber.Ctx) (err error) {
 		var result = make(map[string]DownloadTask)

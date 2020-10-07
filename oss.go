@@ -3,10 +3,9 @@ package main
 import (
 	"io"
 
-	"github.com/tosone/logging"
-
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/cheggaaa/pb/v3"
+	"github.com/tosone/logging"
 )
 
 // OSS ..
