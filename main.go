@@ -8,7 +8,6 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -42,14 +41,12 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-var downloadPool = sync.Map{}
-
 func main() {
 	var app = fiber.New(fiber.Config{Prefork: true})
 
 	app.Get("/status", func(c *fiber.Ctx) (err error) {
 		var result = make(map[string]DownloadTask)
-		downloadPool.Range(func(key, value interface{}) bool {
+		DownloadPool.Range(func(key, value interface{}) bool {
 			var downloadTask = value.(DownloadTask)
 			var bar = downloadTask.ProgressBar
 			var progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
