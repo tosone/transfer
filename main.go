@@ -43,7 +43,10 @@ func main() {
 	}
 
 	RunTask()
-	Config()
+
+	if err = Config(); err != nil {
+		logging.Fatal(err)
+	}
 
 	var app = fiber.New()
 
@@ -142,6 +145,7 @@ func main() {
 			return
 		}
 		content.Content = contentBytes
+		content.Status = PendingStatus
 		if err = content.Insert(); err != nil {
 			err = fmt.Errorf("database error: %v", err)
 			return

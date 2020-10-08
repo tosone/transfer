@@ -24,6 +24,7 @@ func (q Qiniu) Upload() (err error) {
 		Scope: q.Content.Bucket,
 	}
 
+	//logging.Info(viper.GetString("Qiniu.accessKey"), viper.GetString("Qiniu.secretKey"))
 	var mac = qbox.NewMac(viper.GetString("Qiniu.accessKey"), viper.GetString("Qiniu.secretKey"))
 	var upToken = putPolicy.UploadToken(mac)
 	var region storage.Region

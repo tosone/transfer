@@ -55,7 +55,7 @@ again:
 
 // Insert ..
 func (t *Content) Insert() (err error) {
-	if err = DBEngine.Create(t).Error; err != nil {
+	if err = DBEngine.Debug().Create(t).Error; err != nil {
 		return
 	}
 	return

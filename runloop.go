@@ -42,22 +42,24 @@ func RunTask() {
 		for {
 			DownloadPool.Range(func(key, value interface{}) bool {
 				taskWaitGroup.Add() // reach to the max task will be blocked
-				go func() {
-					defer taskWaitGroup.Done()
-					var content = value.(Content)
-					var name = key.(string)
-					if err = TaskHandler(content); err != nil {
-						if err = DBEngine.Model(Content{}).Where(Content{Name: name}).
-							Updates(Content{Status: ErrorStatus, Message: err.Error()}).Error; err != nil {
-							logging.Error(err)
-						}
-					} else {
-						if err = DBEngine.Model(Content{}).Where(Content{Name: name}).
-							Updates(Content{Status: DoneStatus}).Error; err != nil {
-							logging.Error(err)
-						}
+				var content = value.(Content)
+				var name = key.(string)
+
+				logging.Info(name, content)
+
+				defer taskWaitGroup.Done()
+				defer DownloadPool.Delete(content.Name)
+				if err = TaskHandler(content); err != nil {
+					if err = DBEngine.Model(Content{}).Where(Content{Name: name}).
+						Updates(Content{Status: ErrorStatus, Message: err.Error()}).Error; err != nil {
+						logging.Error(err)
 					}
-				}()
+				} else {
+					if err = DBEngine.Model(Content{}).Where(Content{Name: name}).
+						Updates(Content{Status: DoneStatus}).Error; err != nil {
+						logging.Error(err)
+					}
+				}
 				return true
 			})
 			<-time.After(time.Second)

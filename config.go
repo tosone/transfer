@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"os"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 	"github.com/tosone/logging"
@@ -11,7 +11,7 @@ import (
 
 const ConfigFile = "/etc/transfer/config.yaml"
 
-func Config() {
+func Config() (err error) {
 	var configFile string
 	flag.StringVar(&configFile, "config", ConfigFile, "config file")
 	flag.Parse()
@@ -19,13 +19,12 @@ func Config() {
 	if !com.IsFile(configFile) {
 		logging.Fatalf("cannot find config file: %s", configFile)
 	}
+	viper.SetConfigName(configFile)
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(filepath.Dir(configFile))
 
-	var err error
-	var configReader *os.File
-	if configReader, err = os.Open(configFile); err != nil {
-		logging.Fatal(err)
+	if err = viper.ReadInConfig(); err != nil {
+		return
 	}
-	if err = viper.ReadConfig(configReader); err != nil {
-		logging.Fatal(err)
-	}
+	return
 }
