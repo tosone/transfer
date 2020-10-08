@@ -19,8 +19,8 @@ func Config() (err error) {
 	if !com.IsFile(configFile) {
 		logging.Fatalf("cannot find config file: %s", configFile)
 	}
-	viper.SetConfigName(configFile)
 	viper.SetConfigType("yaml")
+	viper.SetConfigName(filepath.Base(configFile))
 	viper.AddConfigPath(filepath.Dir(configFile))
 
 	if err = viper.ReadInConfig(); err != nil {
