@@ -9,3 +9,5 @@ services:
     build: $PWD
     ports:
       - 3000:3000
+    volumes:
+      - $PWD:/app

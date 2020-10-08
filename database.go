@@ -27,7 +27,7 @@ func Database() (err error) {
 	if DBEngine, err = gorm.Open(sqlite.Open(DatabaseFile), &gorm.Config{}); err != nil {
 		return
 	}
-	if err = DBEngine.Debug().AutoMigrate(&Content{}); err != nil {
+	if err = DBEngine.AutoMigrate(&Content{}); err != nil {
 		return
 	}
 	return
