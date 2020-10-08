@@ -13,28 +13,21 @@ import (
 type Status string
 
 const (
-	DoneStatus  Status = "done"
-	ErrorStatus Status = "error"
-	DoingStatus Status = "doing"
+	DoneStatus    Status = "done"
+	ErrorStatus   Status = "error"
+	PendingStatus Status = "pending"
 )
-
-// Task ..
-type Task struct {
-	gorm.Model
-	Name     string
-	URL      string
-	Filename string
-	Status   Status
-}
 
 var DBEngine *gorm.DB
 
+const DatabaseFile = "transfer.db"
+
 // Database ..
 func Database() (err error) {
-	if DBEngine, err = gorm.Open(sqlite.Open("transfer.db"), &gorm.Config{}); err != nil {
+	if DBEngine, err = gorm.Open(sqlite.Open(DatabaseFile), &gorm.Config{}); err != nil {
 		return
 	}
-	if err = DBEngine.AutoMigrate(&Task{}); err != nil {
+	if err = DBEngine.Debug().AutoMigrate(&Content{}); err != nil {
 		return
 	}
 	return
@@ -48,8 +41,8 @@ again:
 		return
 	}
 	name = hex.EncodeToString(hash.Sum(nil))
-	var task Task
-	if err = DBEngine.Where(&Task{Name: name}).First(&task).Error; err == gorm.ErrRecordNotFound {
+	var task Content
+	if err = DBEngine.Where(&Content{Name: name}).First(&task).Error; err == gorm.ErrRecordNotFound {
 		err = nil
 		return
 	} else if err != nil {
@@ -61,7 +54,7 @@ again:
 }
 
 // Insert ..
-func (t *Task) Insert() (err error) {
+func (t *Content) Insert() (err error) {
 	if err = DBEngine.Create(t).Error; err != nil {
 		return
 	}
@@ -69,8 +62,8 @@ func (t *Task) Insert() (err error) {
 }
 
 // UpdateStatus ..
-func (t *Task) UpdateStatus() (err error) {
-	if err = DBEngine.Debug().Model(&Task{}).Where(t.ID).Updates(t).Error; err != nil {
+func (t *Content) UpdateStatus() (err error) {
+	if err = DBEngine.Model(&Content{}).Where(t.Name).Updates(t).Error; err != nil {
 		return
 	}
 	return

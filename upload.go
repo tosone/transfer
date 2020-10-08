@@ -1,5 +1,5 @@
 package main
 
-type Uploader interface {
+type Driver interface {
 	Upload() error
 }

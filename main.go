@@ -1,23 +1,24 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"path/filepath"
-	"strconv"
 	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/tosone/logging"
 	"gorm.io/gorm"
 )
 
 type Content struct {
+	Name           string `json:"name"`
 	Type           string `json:"type"`
-	Auth           Auth   `json:"auth"`
 	URL            string `json:"url"`
 	Filename       string `json:"filename"`
 	RandomFilename bool   `json:"randomFilename"`
@@ -26,31 +27,43 @@ type Content struct {
 	Region         string `json:"region"`
 	Endpoint       string `json:"endpoint"`
 	Force          bool   `json:"force"`
-}
 
-// Auth auth
-type Auth struct {
-	AccessKey string `json:"accessKey"`
-	SecretKey string `json:"secretKey"`
-}
+	Progress string `json:"progress"`
 
-// Response response
-type Response struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Status  Status `json:"-"`
+	Message string `json:"-"`
+	Content []byte `json:"-"`
 }
 
 func main() {
+	var err error
+
+	if err = Database(); err != nil {
+		logging.Fatal(err)
+	}
+
+	RunTask()
+	Config()
+
 	var app = fiber.New()
 
+	app.Use(compress.New())
+	app.Use(requestid.New())
+
 	app.Get("/status", func(c *fiber.Ctx) (err error) {
-		var result = make(map[string]DownloadTask)
+		var result = make(map[string]Content)
 		DownloadPool.Range(func(key, value interface{}) bool {
-			var downloadTask = value.(DownloadTask)
-			var bar = downloadTask.ProgressBar
-			var progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
-			downloadTask.Progress = fmt.Sprintf("%s%%", progress)
-			result[key.(string)] = downloadTask
+			var content = value.(Content)
+			var name = key.(string)
+			ProgressBarPool.Range(func(key, value interface{}) bool {
+				if key.(string) == name {
+					var bar = value.(*pb.ProgressBar)
+					var progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
+					content.Progress = progress
+					return false
+				}
+				return true
+			})
 			return true
 		})
 		if err = c.Status(http.StatusOK).JSON(result); err != nil {
@@ -59,22 +72,42 @@ func main() {
 		return
 	})
 
-	app.Post("/download", func(c *fiber.Ctx) (err error) {
+	app.Get("/status/:name", func(ctx *fiber.Ctx) (err error) {
 		var content Content
-		var response = Response{Code: 200, Message: "Success"}
-		if err = c.BodyParser(&content); err != nil {
-			response.Code = 1001
-			response.Message = err.Error()
-			if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-				return
+		DownloadPool.Range(func(key, value interface{}) bool {
+			content = value.(Content)
+			var name = key.(string)
+			if name == ctx.Params("name") {
+				ProgressBarPool.Range(func(key, value interface{}) bool {
+					if key.(string) == name {
+						var bar = value.(*pb.ProgressBar)
+						var progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
+						content.Progress = progress
+						return false
+					}
+					return true
+				})
+				return false
 			}
+			return true
+		})
+		if err = ctx.Status(http.StatusOK).JSON(content); err != nil {
+			return
+		}
+		return
+	})
+
+	app.Post("/download", func(ctx *fiber.Ctx) (err error) {
+		var content = &Content{}
+		if err = ctx.BodyParser(content); err != nil {
+			ctx.Status(http.StatusBadRequest)
 			return
 		}
 		var name string
 		if name, err = GenName(); err != nil {
 			return
 		}
-
+		content.Name = name
 		if content.RandomFilename {
 			var now = time.Now().Format("20060102")
 			var u *url.URL
@@ -83,144 +116,43 @@ func main() {
 			}
 			var ext = filepath.Ext(u.Path)
 			if ext == "" {
-				response.Code = 1003
-				response.Message = fmt.Sprintf("cannot get ext name: %s", content.URL)
-				if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-					return
-				}
+				err = fmt.Errorf("cannot get ext name: %s", content.URL)
+				ctx.Status(http.StatusBadRequest)
 				return
 			}
 			var filename = fmt.Sprintf("%s-%s%s", now, name, ext)
 			content.Filename = filename
 		}
-
 		if !content.Force {
-			var task Task
-			if err = DBEngine.Where(&Task{URL: content.URL}).First(&task).Error; err == gorm.ErrRecordNotFound {
+			var task Content
+			if err = DBEngine.Where(&Content{URL: content.URL}).First(&task).Error; err == gorm.ErrRecordNotFound {
 				err = nil
 			} else if err != nil {
-				response.Code = 1003
-				response.Message = fmt.Sprintf("database error: %s", content.URL)
-				if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-					return
-				}
+				err = fmt.Errorf("database error: %s", content.URL)
+				ctx.Status(http.StatusBadRequest)
+				return
 			} else {
-				response.Code = 1003
-				response.Message = fmt.Sprintf("url conflict: %s, or you should set force true", content.URL)
-				if err = c.Status(http.StatusConflict).JSON(response); err != nil {
-					return
-				}
+				err = fmt.Errorf("url conflict: %s, or you should set force true", content.URL)
+				ctx.Status(http.StatusConflict)
 				return
 			}
 		}
-
-		var task = &Task{
-			Name:     name,
-			URL:      content.URL,
-			Filename: content.Filename,
-			Status:   DoingStatus,
-		}
-		if err = task.Insert(); err != nil {
-			response.Code = 1003
-			response.Message = fmt.Sprintf("Database error: %v", err)
-			if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-				return
-			}
+		var contentBytes []byte
+		if contentBytes, err = json.Marshal(content); err != nil {
 			return
 		}
-		defer func() {
-			if err != nil || response.Code != 200 {
-				task.Status = ErrorStatus
-				if err := task.UpdateStatus(); err != nil {
-					logging.Error(err)
-				}
-			}
-		}()
-
-		var reader io.ReadCloser
-		var length int64
-		if reader, length, err = downloader(content.URL); err != nil {
-			response.Code = 1003
-			response.Message = fmt.Sprintf("Cannot download the file: %v", err)
-			if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-				return
-			}
+		content.Content = contentBytes
+		if err = content.Insert(); err != nil {
+			err = fmt.Errorf("database error: %v", err)
 			return
 		}
-
-		switch content.Type {
-		case "qiniu":
-			var qiniu = Qiniu{
-				Content: content,
-				Task:    task,
-				Name:    name,
-				Length:  length,
-				Reader:  reader,
-			}
-			if err = qiniu.Upload(); err != nil {
-				response.Code = 1003
-				response.Message = fmt.Sprintf("Upload file with error: %v", err)
-				if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-					return
-				}
-				return
-			}
-			response.Message = fmt.Sprintf("Downloading %s, content-length: %d", path.Join(content.Path, content.Filename), length)
-			if err = c.Status(http.StatusOK).JSON(response); err != nil {
-				return
-			}
-			return
-		case "OSS":
-			var oss = OSS{
-				Content: content,
-				Task:    task,
-				Name:    name,
-				Length:  length,
-				Reader:  reader,
-			}
-			if err = oss.Upload(); err != nil {
-				response.Code = 1003
-				response.Message = fmt.Sprintf("Upload file with error: %v", err)
-				if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-					return
-				}
-				return
-			}
-			response.Message = fmt.Sprintf("Downloading %s, content-length: %d", path.Join(content.Path, content.Filename), length)
-			if err = c.Status(http.StatusOK).JSON(response); err != nil {
-				return
-			}
-			return
-		default:
-			response.Code = 1002
-			response.Message = "Not support this kind of storage"
-			if err = c.Status(http.StatusBadRequest).JSON(response); err != nil {
-				return
-			}
+		if err = ctx.JSON(content); err != nil {
 			return
 		}
+		return
 	})
-
-	var err error
-
-	if err = Database(); err != nil {
-		logging.Fatal(err)
-	}
 
 	if err = app.Listen(":3000"); err != nil {
 		logging.Fatal(err)
 	}
-}
-
-func downloader(url string) (reader io.ReadCloser, length int64, err error) {
-	var resp *http.Response
-	if resp, err = http.Get(url); err != nil {
-		return
-	}
-	reader = resp.Body
-	if length, err = strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64); err != nil {
-		err = fmt.Errorf("cannot get Content-Length in http header: %v", err)
-		return
-	}
-	return
 }
