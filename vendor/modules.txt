@@ -26,6 +26,8 @@ github.com/gofiber/fiber/v2/internal/encoding/ascii
 github.com/gofiber/fiber/v2/internal/encoding/json
 github.com/gofiber/fiber/v2/internal/isatty
 github.com/gofiber/fiber/v2/internal/schema
+github.com/gofiber/fiber/v2/middleware/compress
+github.com/gofiber/fiber/v2/middleware/requestid
 github.com/gofiber/fiber/v2/utils
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
@@ -57,7 +59,8 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.9
 ## explicit
 github.com/mattn/go-runewidth
-# github.com/mattn/go-sqlite3 v1.14.3
+# github.com/mattn/go-sqlite3 v1.14.4
+## explicit
 github.com/mattn/go-sqlite3
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
@@ -92,6 +95,9 @@ github.com/subosito/gotenv
 # github.com/tosone/logging v1.1.0
 ## explicit
 github.com/tosone/logging
+# github.com/unknwon/com v1.0.1
+## explicit
+github.com/unknwon/com
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasthttp v1.16.0
@@ -101,7 +107,7 @@ github.com/valyala/fasthttp/reuseport
 github.com/valyala/fasthttp/stackless
 # github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a
 github.com/valyala/tcplisten
-# golang.org/x/sys v0.0.0-20201006155630-ac719f4daadf
+# golang.org/x/sys v0.0.0-20201007165808-a893ed343c85
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
