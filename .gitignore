@@ -1,5 +1,6 @@
 release/
 .idea/
+data/
 
 *.db
 *.yaml
