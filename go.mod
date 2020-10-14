@@ -7,6 +7,7 @@ require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/cheggaaa/pb/v3 v3.0.5
+	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gofiber/fiber/v2 v2.0.6
