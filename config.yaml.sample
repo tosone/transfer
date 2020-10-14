@@ -4,3 +4,5 @@ Qiniu:
 OSS:
     accessKey:
     secretKey:
+
+DatabaseDir: ./data
