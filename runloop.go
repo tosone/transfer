@@ -1,38 +1,54 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
-	"transfer/database"
-	"transfer/uploader"
-
-	"transfer/sizewg"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/dgraph-io/badger/v2"
 	"github.com/tosone/logging"
+
+	"transfer/database"
+	"transfer/sizewg"
+	"transfer/uploader"
 )
 
 const MaxTask = 4
 
-func RunTask() {
-	var err error
+func RunTask() (err error) {
+	var contents []database.Content
+	if contents, err = database.GetContentsByStatus(database.DoingStatus); err != nil {
+		if err != badger.ErrKeyNotFound {
+			return
+		}
+		err = nil
+	}
+	for _, content := range contents {
+		if err = content.UpdateStatus(database.PendingStatus); err != nil {
+			return
+		}
+	}
 
 	go func() {
+		var err error
 		for {
-			var tasks []database.Content
-			if err = database.DBEngine.Where(database.Content{Status: database.PendingStatus}).Find(&tasks).Error; err != nil {
-				logging.Error(err)
-			}
-			for _, task := range tasks {
-				var content database.Content
-				if err = json.Unmarshal(task.Content, &content); err != nil {
+			var contents []database.Content
+			if contents, err = database.GetContentsByStatus(database.PendingStatus); err != nil {
+				if err != badger.ErrKeyNotFound {
 					logging.Error(err)
 				}
-				DownloadPool.Store(task.Name, content)
+				err = nil
+				<-time.After(time.Second)
+				continue
+			}
+			for _, content := range contents {
+				DownloadPool.Store(content.Name, content)
+				if err = content.UpdateStatus(database.DoingStatus); err != nil {
+					logging.Error(err)
+				}
 			}
 			<-time.After(time.Second)
 		}
@@ -41,32 +57,45 @@ func RunTask() {
 	var taskWaitGroup = sizewg.New(MaxTask)
 
 	go func() {
+		var err error
 		for {
 			DownloadPool.Range(func(key, value interface{}) bool {
-				taskWaitGroup.Add() // reach to the max task will be blocked
-				var content = value.(database.Content)
 				var name = key.(string)
+				var content = value.(database.Content)
 
-				logging.Info(name, content)
-
-				defer taskWaitGroup.Done()
-				defer DownloadPool.Delete(content.Name)
-				if err = TaskHandler(content); err != nil {
-					if err = database.DBEngine.Model(database.Content{}).Where(database.Content{Name: name}).
-						Updates(database.Content{Status: database.ErrorStatus, Message: err.Error()}).Error; err != nil {
-						logging.Error(err)
-					}
-				} else {
-					if err = database.DBEngine.Model(database.Content{}).Where(database.Content{Name: name}).
-						Updates(database.Content{Status: database.DoneStatus}).Error; err != nil {
-						logging.Error(err)
-					}
+				if content.Status != database.PendingStatus {
+					return true
 				}
+
+				taskWaitGroup.Add() // reach to the max task will be blocked
+
+				logging.Infof("task %s is starting: %s", name, content.URL)
+
+				content.Status = database.DoingStatus
+				DownloadPool.Store(key, content)
+
+				go func() {
+					defer taskWaitGroup.Done()
+					defer DownloadPool.Delete(content.Name)
+
+					if err = TaskHandler(content); err != nil {
+						if err = content.UpdateStatus(database.ErrorStatus); err != nil {
+							logging.Error(err)
+						}
+					} else {
+						if err = content.UpdateStatus(database.DoneStatus); err != nil {
+							logging.Error(err)
+						}
+					}
+				}()
+
 				return true
 			})
 			<-time.After(time.Second)
 		}
 	}()
+
+	return
 }
 
 func TaskHandler(content database.Content) (err error) {

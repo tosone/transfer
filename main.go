@@ -1,32 +1,54 @@
 package main
 
 import (
-	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
 	"path/filepath"
+	"sync"
 	"time"
-	"transfer/database"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/dgraph-io/badger/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/spf13/viper"
 	"github.com/tosone/logging"
-	"gorm.io/gorm"
+	"github.com/unknwon/com"
+
+	"transfer/database"
 )
+
+// DownloadPool ..
+var DownloadPool = sync.Map{}
+
+// ProgressBarPool ..
+var ProgressBarPool = sync.Map{}
+
+// ConfigFile default config path
+const ConfigFile = "/etc/transfer/config.yaml"
 
 func main() {
 	var err error
 
-	if err = database.Database(); err != nil {
+	if err = Config(); err != nil {
 		logging.Fatal(err)
 	}
 
-	RunTask()
+	if err = database.Initialize(); err != nil {
+		logging.Fatal(err)
+	}
+	defer func() {
+		if err = database.Teardown(); err != nil {
+			logging.Error(err)
+		}
+	}()
 
-	if err = Config(); err != nil {
+	if err = RunTask(); err != nil {
 		logging.Fatal(err)
 	}
 
@@ -38,13 +60,14 @@ func main() {
 	app.Get("/status", func(c *fiber.Ctx) (err error) {
 		var result = make(map[string]database.Content)
 		DownloadPool.Range(func(key, value interface{}) bool {
-			var content = value.(database.Content)
 			var name = key.(string)
+			var content = value.(database.Content)
 			ProgressBarPool.Range(func(key, value interface{}) bool {
 				if key.(string) == name {
 					var bar = value.(*pb.ProgressBar)
 					var progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
 					content.Progress = progress
+					result[name] = content
 					return false
 				}
 				return true
@@ -109,24 +132,17 @@ func main() {
 			content.Filename = filename
 		}
 		if !content.Force {
-			var task database.Content
-			if err = database.DBEngine.Where(&database.Content{URL: content.URL}).First(&task).Error; err == gorm.ErrRecordNotFound {
+			if _, err = database.GetContentByURL(content.URL); err != nil {
+				if err != badger.ErrKeyNotFound {
+					return
+				}
 				err = nil
-			} else if err != nil {
-				err = fmt.Errorf("database error: %s", content.URL)
-				ctx.Status(http.StatusBadRequest)
-				return
 			} else {
 				err = fmt.Errorf("url conflict: %s, or you should set force true", content.URL)
 				ctx.Status(http.StatusConflict)
 				return
 			}
 		}
-		var contentBytes []byte
-		if contentBytes, err = json.Marshal(content); err != nil {
-			return
-		}
-		content.Content = contentBytes
 		content.Status = database.PendingStatus
 		if err = content.Insert(); err != nil {
 			err = fmt.Errorf("database error: %v", err)
@@ -138,7 +154,34 @@ func main() {
 		return
 	})
 
-	if err = app.Listen(":3000"); err != nil {
-		logging.Fatal(err)
+	go func() {
+		if err = app.Listen(":3000"); err != nil {
+			logging.Fatal(err)
+		}
+	}()
+
+	signalChanel := make(chan os.Signal, 1)
+	signal.Notify(signalChanel, os.Interrupt)
+
+	<-signalChanel
+
+	logging.Info("transfer has been stopped")
+}
+
+func Config() (err error) {
+	var configFile string
+	flag.StringVar(&configFile, "config", ConfigFile, "config file")
+	flag.Parse()
+
+	if !com.IsFile(configFile) {
+		logging.Fatalf("cannot find config file: %s", configFile)
 	}
+	viper.SetConfigType("yaml")
+	viper.SetConfigName(filepath.Base(configFile))
+	viper.AddConfigPath(filepath.Dir(configFile))
+
+	if err = viper.ReadInConfig(); err != nil {
+		return
+	}
+	return
 }
