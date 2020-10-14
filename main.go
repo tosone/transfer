@@ -32,6 +32,24 @@ var ProgressBarPool = sync.Map{}
 // ConfigFile default config path
 const ConfigFile = "/etc/transfer/config.yaml"
 
+func Config() (err error) {
+	var configFile string
+	flag.StringVar(&configFile, "config", ConfigFile, "config file")
+	flag.Parse()
+
+	if !com.IsFile(configFile) {
+		logging.Fatalf("cannot find config file: %s", configFile)
+	}
+	viper.SetConfigType("yaml")
+	viper.SetConfigName(filepath.Base(configFile))
+	viper.AddConfigPath(filepath.Dir(configFile))
+
+	if err = viper.ReadInConfig(); err != nil {
+		return
+	}
+	return
+}
+
 func main() {
 	var err error
 
@@ -166,22 +184,4 @@ func main() {
 	<-signalChanel
 
 	logging.Info("transfer has been stopped")
-}
-
-func Config() (err error) {
-	var configFile string
-	flag.StringVar(&configFile, "config", ConfigFile, "config file")
-	flag.Parse()
-
-	if !com.IsFile(configFile) {
-		logging.Fatalf("cannot find config file: %s", configFile)
-	}
-	viper.SetConfigType("yaml")
-	viper.SetConfigName(filepath.Base(configFile))
-	viper.AddConfigPath(filepath.Dir(configFile))
-
-	if err = viper.ReadInConfig(); err != nil {
-		return
-	}
-	return
 }
