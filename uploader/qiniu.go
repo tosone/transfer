@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"transfer/database"
 
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	"github.com/qiniu/api.v7/v7/storage"
 	"github.com/spf13/viper"
 	"github.com/tosone/logging"
+
+	"transfer/database"
 )
 
 // Qiniu ..
@@ -22,15 +23,14 @@ type Qiniu struct {
 // Upload ..
 func (q Qiniu) Upload() (err error) {
 	var putPolicy = storage.PutPolicy{
-		Scope: q.Content.Bucket,
+		Scope: viper.GetString("Qiniu.bucket"),
 	}
 
-	//logging.Info(viper.GetString("Qiniu.accessKey"), viper.GetString("Qiniu.secretKey"))
 	var mac = qbox.NewMac(viper.GetString("Qiniu.accessKey"), viper.GetString("Qiniu.secretKey"))
 	var upToken = putPolicy.UploadToken(mac)
 	var region storage.Region
 	var exist bool
-	if region, exist = storage.GetRegionByID(storage.RegionID(q.Content.Region)); !exist {
+	if region, exist = storage.GetRegionByID(storage.RegionID(viper.GetString("Qiniu.region"))); !exist {
 		err = fmt.Errorf("cannot find the specific region")
 		return
 	}

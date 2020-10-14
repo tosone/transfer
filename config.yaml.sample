@@ -1,8 +1,12 @@
 Qiniu:
     accessKey:
     secretKey:
+    region:
+    bucket:
 OSS:
     accessKey:
     secretKey:
+    endpoint:
+    bucket:
 
 DatabaseDir: ./data
