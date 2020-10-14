@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"path/filepath"
 
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	"github.com/qiniu/api.v7/v7/storage"
@@ -42,7 +43,8 @@ func (q Qiniu) Upload() (err error) {
 	var formUploader = storage.NewFormUploader(&cfg)
 	var ret = storage.PutRet{}
 	var putExtra = storage.PutExtra{Params: map[string]string{}}
-	if err = formUploader.Put(context.Background(), &ret, upToken, q.Content.Filename, q.Reader, q.Length, &putExtra); err != nil {
+	if err = formUploader.Put(context.Background(), &ret, upToken, filepath.Join(q.Content.Path, q.Content.Filename),
+		q.Reader, q.Length, &putExtra); err != nil {
 		logging.Error(err)
 	}
 	return

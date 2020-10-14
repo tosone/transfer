@@ -29,6 +29,7 @@ type Content struct {
 	Name           string `json:"name"`
 	Type           string `json:"type"`
 	URL            string `json:"url"`
+	DownloadURL    string `json:"downloadUrl"`
 	Filename       string `json:"filename"`
 	RandomFilename bool   `json:"randomFilename"`
 	Path           string `json:"path"`
@@ -164,6 +165,33 @@ func GetContentsByStatus(status Status) (contents []Content, err error) {
 			if content.Status == status {
 				contents = append(contents, content)
 			}
+		}
+		return
+	}); err != nil {
+		return
+	}
+	if len(contents) == 0 {
+		err = badger.ErrKeyNotFound
+	}
+	return
+}
+
+// GetContents get all of the content
+func GetContents() (contents []Content, err error) {
+	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
+		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
+		defer iter.Close()
+		for iter.Rewind(); iter.Valid(); iter.Next() {
+			var item = iter.Item()
+			var data = make([]byte, item.ValueSize())
+			if _, err = item.ValueCopy(data); err != nil {
+				return
+			}
+			var content Content
+			if err = json.Unmarshal(data, &content); err != nil {
+				return
+			}
+			contents = append(contents, content)
 		}
 		return
 	}); err != nil {

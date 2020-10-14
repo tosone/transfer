@@ -70,54 +70,37 @@ func main() {
 		logging.Fatal(err)
 	}
 
+	var prefix *url.URL
+	if prefix, err = url.Parse(viper.GetString("Prefix")); err != nil {
+		logging.Fatal(err)
+	}
+
 	var app = fiber.New()
 
 	app.Use(compress.New())
 	app.Use(requestid.New())
 
-	app.Get("/status", func(c *fiber.Ctx) (err error) {
-		var result = make(map[string]database.Content)
-		DownloadPool.Range(func(key, value interface{}) bool {
-			var name = key.(string)
-			var content = value.(database.Content)
-			ProgressBarPool.Range(func(key, value interface{}) bool {
-				if key.(string) == name {
-					var bar = value.(*pb.ProgressBar)
-					var progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
-					content.Progress = progress
-					result[name] = content
-					return false
-				}
-				return true
-			})
-			return true
-		})
-		if err = c.Status(http.StatusOK).JSON(result); err != nil {
+	app.Get("/task", func(ctx *fiber.Ctx) (err error) {
+		var contents []database.Content
+		if contents, err = database.GetContents(); err != nil {
+			return
+		}
+		for index, content := range contents {
+			contents[index].Progress = getProgress(content.Name)
+		}
+		if err = ctx.JSON(contents); err != nil {
 			return
 		}
 		return
 	})
 
-	app.Get("/status/:name", func(ctx *fiber.Ctx) (err error) {
+	app.Get("/task/:name", func(ctx *fiber.Ctx) (err error) {
 		var content database.Content
-		DownloadPool.Range(func(key, value interface{}) bool {
-			content = value.(database.Content)
-			var name = key.(string)
-			if name == ctx.Params("name") {
-				ProgressBarPool.Range(func(key, value interface{}) bool {
-					if key.(string) == name {
-						var bar = value.(*pb.ProgressBar)
-						var progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
-						content.Progress = progress
-						return false
-					}
-					return true
-				})
-				return false
-			}
-			return true
-		})
-		if err = ctx.Status(http.StatusOK).JSON(content); err != nil {
+		if content, err = database.GetContentByName(ctx.Params("name")); err != nil {
+			return
+		}
+		content.Progress = getProgress(content.Name)
+		if err = ctx.JSON(content); err != nil {
 			return
 		}
 		return
@@ -161,6 +144,8 @@ func main() {
 				return
 			}
 		}
+		prefix.Path = filepath.Join(content.Path, content.Filename)
+		content.DownloadURL = prefix.String()
 		content.Status = database.PendingStatus
 		if err = content.Insert(); err != nil {
 			err = fmt.Errorf("database error: %v", err)
@@ -184,4 +169,16 @@ func main() {
 	<-signalChanel
 
 	logging.Info("transfer has been stopped")
+}
+
+func getProgress(name string) (progress string) {
+	ProgressBarPool.Range(func(key, value interface{}) bool {
+		if key.(string) == name {
+			var bar = value.(*pb.ProgressBar)
+			progress = fmt.Sprintf("%.2f", float64(bar.Current()*100.0)/float64(bar.Total()))
+			return false
+		}
+		return true
+	})
+	return
 }
