@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"time"
+	"transfer/database"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/gofiber/fiber/v2"
@@ -16,29 +17,10 @@ import (
 	"gorm.io/gorm"
 )
 
-type Content struct {
-	Name           string `json:"name"`
-	Type           string `json:"type"`
-	URL            string `json:"url"`
-	Filename       string `json:"filename"`
-	RandomFilename bool   `json:"randomFilename"`
-	Path           string `json:"path"`
-	Bucket         string `json:"bucket"`
-	Region         string `json:"region"`
-	Endpoint       string `json:"endpoint"`
-	Force          bool   `json:"force"`
-
-	Progress string `json:"progress"`
-
-	Status  Status `json:"-"`
-	Message string `json:"-"`
-	Content []byte `json:"-"`
-}
-
 func main() {
 	var err error
 
-	if err = Database(); err != nil {
+	if err = database.Database(); err != nil {
 		logging.Fatal(err)
 	}
 
@@ -54,9 +36,9 @@ func main() {
 	app.Use(requestid.New())
 
 	app.Get("/status", func(c *fiber.Ctx) (err error) {
-		var result = make(map[string]Content)
+		var result = make(map[string]database.Content)
 		DownloadPool.Range(func(key, value interface{}) bool {
-			var content = value.(Content)
+			var content = value.(database.Content)
 			var name = key.(string)
 			ProgressBarPool.Range(func(key, value interface{}) bool {
 				if key.(string) == name {
@@ -76,9 +58,9 @@ func main() {
 	})
 
 	app.Get("/status/:name", func(ctx *fiber.Ctx) (err error) {
-		var content Content
+		var content database.Content
 		DownloadPool.Range(func(key, value interface{}) bool {
-			content = value.(Content)
+			content = value.(database.Content)
 			var name = key.(string)
 			if name == ctx.Params("name") {
 				ProgressBarPool.Range(func(key, value interface{}) bool {
@@ -101,13 +83,13 @@ func main() {
 	})
 
 	app.Post("/download", func(ctx *fiber.Ctx) (err error) {
-		var content = &Content{}
+		var content = &database.Content{}
 		if err = ctx.BodyParser(content); err != nil {
 			ctx.Status(http.StatusBadRequest)
 			return
 		}
 		var name string
-		if name, err = GenName(); err != nil {
+		if name, err = database.GenName(); err != nil {
 			return
 		}
 		content.Name = name
@@ -127,8 +109,8 @@ func main() {
 			content.Filename = filename
 		}
 		if !content.Force {
-			var task Content
-			if err = DBEngine.Where(&Content{URL: content.URL}).First(&task).Error; err == gorm.ErrRecordNotFound {
+			var task database.Content
+			if err = database.DBEngine.Where(&database.Content{URL: content.URL}).First(&task).Error; err == gorm.ErrRecordNotFound {
 				err = nil
 			} else if err != nil {
 				err = fmt.Errorf("database error: %s", content.URL)
@@ -145,7 +127,7 @@ func main() {
 			return
 		}
 		content.Content = contentBytes
-		content.Status = PendingStatus
+		content.Status = database.PendingStatus
 		if err = content.Insert(); err != nil {
 			err = fmt.Errorf("database error: %v", err)
 			return

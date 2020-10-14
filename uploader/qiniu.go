@@ -1,9 +1,10 @@
-package main
+package uploader
 
 import (
 	"context"
 	"fmt"
 	"io"
+	"transfer/database"
 
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	"github.com/qiniu/api.v7/v7/storage"
@@ -13,7 +14,7 @@ import (
 
 // Qiniu ..
 type Qiniu struct {
-	Content Content
+	Content database.Content
 	Length  int64
 	Reader  io.ReadCloser
 }

@@ -1,7 +1,8 @@
-package main
+package uploader
 
 import (
 	"io"
+	"transfer/database"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/spf13/viper"
@@ -10,7 +11,7 @@ import (
 
 // OSS ..
 type OSS struct {
-	Content Content
+	Content database.Content
 	Length  int64
 	Reader  io.ReadCloser
 }

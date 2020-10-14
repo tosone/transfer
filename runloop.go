@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"transfer/database"
+	"transfer/uploader"
 
 	"transfer/sizewg"
 
@@ -21,12 +23,12 @@ func RunTask() {
 
 	go func() {
 		for {
-			var tasks []Content
-			if err = DBEngine.Where(Content{Status: PendingStatus}).Find(&tasks).Error; err != nil {
+			var tasks []database.Content
+			if err = database.DBEngine.Where(database.Content{Status: database.PendingStatus}).Find(&tasks).Error; err != nil {
 				logging.Error(err)
 			}
 			for _, task := range tasks {
-				var content Content
+				var content database.Content
 				if err = json.Unmarshal(task.Content, &content); err != nil {
 					logging.Error(err)
 				}
@@ -42,7 +44,7 @@ func RunTask() {
 		for {
 			DownloadPool.Range(func(key, value interface{}) bool {
 				taskWaitGroup.Add() // reach to the max task will be blocked
-				var content = value.(Content)
+				var content = value.(database.Content)
 				var name = key.(string)
 
 				logging.Info(name, content)
@@ -50,13 +52,13 @@ func RunTask() {
 				defer taskWaitGroup.Done()
 				defer DownloadPool.Delete(content.Name)
 				if err = TaskHandler(content); err != nil {
-					if err = DBEngine.Model(Content{}).Where(Content{Name: name}).
-						Updates(Content{Status: ErrorStatus, Message: err.Error()}).Error; err != nil {
+					if err = database.DBEngine.Model(database.Content{}).Where(database.Content{Name: name}).
+						Updates(database.Content{Status: database.ErrorStatus, Message: err.Error()}).Error; err != nil {
 						logging.Error(err)
 					}
 				} else {
-					if err = DBEngine.Model(Content{}).Where(Content{Name: name}).
-						Updates(Content{Status: DoneStatus}).Error; err != nil {
+					if err = database.DBEngine.Model(database.Content{}).Where(database.Content{Name: name}).
+						Updates(database.Content{Status: database.DoneStatus}).Error; err != nil {
 						logging.Error(err)
 					}
 				}
@@ -67,7 +69,7 @@ func RunTask() {
 	}()
 }
 
-func TaskHandler(content Content) (err error) {
+func TaskHandler(content database.Content) (err error) {
 	var reader io.ReadCloser
 	var length int64
 	if reader, length, err = downloader(content.URL); err != nil {
@@ -88,10 +90,10 @@ func TaskHandler(content Content) (err error) {
 		}
 	}()
 
-	var driver Driver
+	var driver uploader.Driver
 	switch content.Type {
 	case "qiniu":
-		driver = Qiniu{
+		driver = uploader.Qiniu{
 			Content: content,
 			Length:  length,
 			Reader:  barReader,
@@ -100,7 +102,7 @@ func TaskHandler(content Content) (err error) {
 			return
 		}
 	case "OSS":
-		driver = OSS{
+		driver = uploader.OSS{
 			Content: content,
 			Length:  length,
 			Reader:  barReader,

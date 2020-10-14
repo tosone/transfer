@@ -1,4 +1,4 @@
-package main
+package uploader
 
 type Driver interface {
 	Upload() error
