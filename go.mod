@@ -26,7 +26,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/tosone/logging v1.1.0
 	github.com/unknwon/com v1.0.1
-	golang.org/x/sys v0.0.0-20201008064518-c1f3e3309c71 // indirect
+	golang.org/x/sys v0.0.0-20201013132646-2da7054afaeb // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
