@@ -1,4 +1,4 @@
-package v2
+package database
 
 import (
 	"encoding/hex"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
-	"github.com/tosone/logging"
+	"github.com/spf13/viper"
 )
 
 // Status ..
@@ -21,6 +21,8 @@ const (
 	ErrorStatus Status = "error"
 	// PendingStatus ..
 	PendingStatus Status = "pending"
+	// DoingStatus ..
+	DoingStatus Status = "doing"
 )
 
 type Content struct {
@@ -30,30 +32,25 @@ type Content struct {
 	Filename       string `json:"filename"`
 	RandomFilename bool   `json:"randomFilename"`
 	Path           string `json:"path"`
-	Bucket         string `json:"bucket"`
-	Region         string `json:"region"`
-	Endpoint       string `json:"endpoint"`
 	Force          bool   `json:"force"`
 	Progress       string `json:"progress"`
 	Status         Status `json:"status"`
 	Message        string `json:"message"`
-	//Content []byte `json:"-"`
 }
 
-var DBEngine *badger.DB
+var dbEngine *badger.DB
 
-const databaseFile = "badgerDir"
-
-func init() {
-	var err error
-	if DBEngine, err = badger.Open(badger.DefaultOptions(databaseFile)); err != nil {
-		logging.Fatal(err)
+// Initialize ..
+func Initialize() (err error) {
+	if dbEngine, err = badger.Open(badger.DefaultOptions(viper.GetString("DatabaseDir"))); err != nil {
+		return
 	}
+	return
 }
 
 // Teardown ..
 func Teardown() (err error) {
-	if err = DBEngine.Close(); err != nil {
+	if err = dbEngine.Close(); err != nil {
 		return
 	}
 	return
@@ -61,14 +58,12 @@ func Teardown() (err error) {
 
 // Insert ..
 func (t *Content) Insert() (err error) {
-	var txn = DBEngine.NewTransaction(true)
+	var txn = dbEngine.NewTransaction(true)
 
 	var data []byte
 	if data, err = json.Marshal(*t); err != nil {
 		return
 	}
-
-	logging.Info(t)
 
 	var entry = badger.NewEntry([]byte(t.Name), data)
 	if err = txn.SetEntry(entry); err != nil {
@@ -82,7 +77,7 @@ func (t *Content) Insert() (err error) {
 
 // UpdateStatus ..
 func (t *Content) UpdateStatus(status Status) (err error) {
-	var txn = DBEngine.NewTransaction(true)
+	var txn = dbEngine.NewTransaction(true)
 	defer func() {
 		if err = txn.Commit(); err != nil {
 			return
@@ -106,7 +101,7 @@ func (t *Content) UpdateStatus(status Status) (err error) {
 
 // GetContentByName ..
 func GetContentByName(name string) (content Content, err error) {
-	if err = DBEngine.View(func(txn *badger.Txn) (err error) {
+	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var item *badger.Item
 		if item, err = txn.Get([]byte(name)); err != nil {
 			return
@@ -127,7 +122,7 @@ func GetContentByName(name string) (content Content, err error) {
 
 // GetContentByURL ..
 func GetContentByURL(url string) (content Content, err error) {
-	if err = DBEngine.View(func(txn *badger.Txn) (err error) {
+	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
 		for iter.Rewind(); iter.Valid(); iter.Next() {
@@ -153,7 +148,7 @@ func GetContentByURL(url string) (content Content, err error) {
 
 // GetContentsByStatus ..
 func GetContentsByStatus(status Status) (contents []Content, err error) {
-	if err = DBEngine.View(func(txn *badger.Txn) (err error) {
+	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
 		for iter.Rewind(); iter.Valid(); iter.Next() {
