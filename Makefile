@@ -3,11 +3,11 @@ Target   = ${app_name}
 
 .PHONY: build
 build:
-	go build -v -o release/${Target}
+	CGO_ENABLED=0 go build -v -o release/${Target}
 
 .PHONY: release
 release:
-	go build -v -o release/${Target}${Suffix} -ldflags "-s -w"
+	CGO_ENABLED=0 go build -v -o release/${Target} -ldflags "-s -w"
 
 .PHONY: lint
 lint:
