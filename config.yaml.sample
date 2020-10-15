@@ -15,3 +15,14 @@ COS:
     region:
     accessKey:
     secretKey:
+minio:
+    accessKeyID:
+    secretAccessKey:
+    endpoint:
+    bucket:
+    useSSL:
+s3:
+    accessKeyID:
+    secretAccessKey:
+    bucket:
+    region:

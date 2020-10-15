@@ -128,28 +128,30 @@ func TaskHandler(content database.Content) (err error) {
 	}
 	switch content.Type {
 	case "qiniu":
-		driver = uploader.Qiniu{
-			Uploader: upload,
-		}
+		driver = uploader.Qiniu{Uploader: upload}
 		if err = driver.Upload(); err != nil {
 			return
 		}
 	case "OSS":
-		driver = uploader.OSS{
-			Uploader: upload,
-		}
+		driver = uploader.OSS{Uploader: upload}
 		if err = driver.Upload(); err != nil {
 			return
 		}
-		return
 	case "COS":
-		driver = uploader.COS{
-			Uploader: upload,
-		}
+		driver = uploader.COS{Uploader: upload}
 		if err = driver.Upload(); err != nil {
 			return
 		}
-		return
+	case "minio":
+		driver = uploader.Minio{Uploader: upload}
+		if err = driver.Upload(); err != nil {
+			return
+		}
+	case "s3":
+		driver = uploader.S3{Uploader: upload}
+		if err = driver.Upload(); err != nil {
+			return
+		}
 	default:
 		err = fmt.Errorf("not support this type: %s", content.Type)
 		return
