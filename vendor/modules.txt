@@ -59,6 +59,8 @@ github.com/golang/protobuf/proto
 # github.com/golang/snappy v0.0.2
 ## explicit
 github.com/golang/snappy
+# github.com/google/go-querystring v1.0.0
+github.com/google/go-querystring/query
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
 github.com/hashicorp/hcl/hcl/ast
@@ -89,6 +91,8 @@ github.com/mattn/go-runewidth
 # github.com/mitchellh/mapstructure v1.3.3
 ## explicit
 github.com/mitchellh/mapstructure
+# github.com/mozillazg/go-httpheader v0.2.1
+github.com/mozillazg/go-httpheader
 # github.com/pelletier/go-toml v1.8.1
 ## explicit
 github.com/pelletier/go-toml
@@ -125,6 +129,9 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
+# github.com/tencentyun/cos-go-sdk-v5 v0.7.10
+## explicit
+github.com/tencentyun/cos-go-sdk-v5
 # github.com/tosone/logging v1.1.0
 ## explicit
 github.com/tosone/logging
@@ -144,7 +151,7 @@ github.com/valyala/tcplisten
 ## explicit
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20201014080544-cc95f250f6bc
+# golang.org/x/sys v0.0.0-20201015000850-e3ed0017c211
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
