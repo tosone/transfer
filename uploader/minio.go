@@ -28,7 +28,7 @@ func (d Minio) Upload() (err error) {
 		return
 	}
 	var bucket = viper.GetString("minio.bucket")
-	var filename = filepath.Join(d.Content.Path, d.Content.Filename)
+	var filename = filepath.Join(d.Task.Path, d.Task.Filename)
 	if _, err = client.PutObject(context.Background(), bucket, filename, d.Reader,
 		d.Length, minio.PutObjectOptions{ContentType: "application/octet-stream"}); err != nil {
 		return

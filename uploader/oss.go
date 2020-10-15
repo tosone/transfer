@@ -24,7 +24,7 @@ func (d OSS) Upload() (err error) {
 	if bucketObj, err = client.Bucket(viper.GetString("OSS.bucket")); err != nil {
 		return
 	}
-	var filename = filepath.Join(d.Content.Path, d.Content.Filename)
+	var filename = filepath.Join(d.Task.Path, d.Task.Filename)
 	if err = bucketObj.PutObject(filename, d.Reader); err != nil {
 		logging.Error(err)
 	}

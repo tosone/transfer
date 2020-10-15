@@ -2,6 +2,7 @@ package uploader
 
 import (
 	"io"
+
 	"transfer/database"
 )
 
@@ -11,7 +12,7 @@ type Driver interface {
 
 // Uploader ..
 type Uploader struct {
-	Content database.Content
-	Length  int64
-	Reader  io.ReadCloser
+	Task   database.Task
+	Length int64
+	Reader io.ReadCloser
 }

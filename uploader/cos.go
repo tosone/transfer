@@ -30,7 +30,7 @@ func (d COS) Upload() (err error) {
 		},
 	})
 
-	var filename = filepath.Join(d.Content.Path, d.Content.Filename)
+	var filename = filepath.Join(d.Task.Path, d.Task.Filename)
 	if _, err = client.Object.Put(context.Background(), filename, d.Reader, nil); err != nil {
 		return
 	}

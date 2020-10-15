@@ -34,7 +34,7 @@ func (d S3) Upload() (err error) {
 	var object = &s3.PutObjectInput{
 		Body:   aws.ReadSeekCloser(d.Reader),
 		Bucket: aws.String(viper.GetString("s3.bucket")),
-		Key:    aws.String(filepath.Join(d.Content.Path, d.Content.Filename)),
+		Key:    aws.String(filepath.Join(d.Task.Path, d.Task.Filename)),
 	}
 
 	var svc = s3.New(sess)

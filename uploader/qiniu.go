@@ -37,7 +37,7 @@ func (d Qiniu) Upload() (err error) {
 	var formUploader = storage.NewFormUploader(&cfg)
 	var ret = storage.PutRet{}
 	var putExtra = storage.PutExtra{Params: map[string]string{}}
-	var filename = filepath.Join(d.Content.Path, d.Content.Filename)
+	var filename = filepath.Join(d.Task.Path, d.Task.Filename)
 	if err = formUploader.Put(context.Background(), &ret, upToken, filename,
 		d.Reader, d.Length, &putExtra); err != nil {
 		return

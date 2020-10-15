@@ -6,6 +6,10 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"transfer/notify"
+
+	"github.com/spf13/viper"
+	"github.com/unknwon/com"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/dgraph-io/badger/v2"
@@ -19,14 +23,14 @@ import (
 const MaxTask = 4
 
 func RunTask() (err error) {
-	var contents []database.Content
-	if contents, err = database.GetContentsByStatus(database.DoingStatus); err != nil {
+	var tasks []database.Task
+	if tasks, err = database.GetContentsByStatus(database.DoingStatus); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return
 		}
 		err = nil
 	}
-	for _, content := range contents {
+	for _, content := range tasks {
 		if err = content.UpdateStatus(database.PendingStatus); err != nil {
 			return
 		}
@@ -35,8 +39,8 @@ func RunTask() (err error) {
 	go func() {
 		var err error
 		for {
-			var contents []database.Content
-			if contents, err = database.GetContentsByStatus(database.PendingStatus); err != nil {
+			var tasks []database.Task
+			if tasks, err = database.GetContentsByStatus(database.PendingStatus); err != nil {
 				if err != badger.ErrKeyNotFound {
 					logging.Error(err)
 				}
@@ -44,9 +48,9 @@ func RunTask() (err error) {
 				<-time.After(time.Second)
 				continue
 			}
-			for _, content := range contents {
-				DownloadPool.Store(content.Name, content)
-				if err = content.UpdateStatus(database.DoingStatus); err != nil {
+			for _, task := range tasks {
+				DownloadPool.Store(task.Name, task)
+				if err = task.UpdateStatus(database.DoingStatus); err != nil {
 					logging.Error(err)
 				}
 			}
@@ -61,30 +65,30 @@ func RunTask() (err error) {
 		for {
 			DownloadPool.Range(func(key, value interface{}) bool {
 				var name = key.(string)
-				var content = value.(database.Content)
+				var task = value.(database.Task)
 
-				if content.Status != database.PendingStatus {
+				if task.Status != database.PendingStatus {
 					return true
 				}
 
 				taskWaitGroup.Add() // reach to the max task will be blocked
 
-				logging.Infof("task %s is starting: %s", name, content.URL)
+				logging.Infof("task %s is starting: %s", name, task.URL)
 
-				content.Status = database.DoingStatus
-				DownloadPool.Store(key, content)
+				task.Status = database.DoingStatus
+				DownloadPool.Store(key, task)
 
 				go func() {
 					defer taskWaitGroup.Done()
-					defer DownloadPool.Delete(content.Name)
+					defer DownloadPool.Delete(task.Name)
 
-					if err = TaskHandler(content); err != nil {
+					if err = TaskHandler(task); err != nil {
 						logging.Error(err)
-						if err = content.UpdateStatus(database.ErrorStatus); err != nil {
+						if err = task.UpdateStatus(database.ErrorStatus); err != nil {
 							logging.Error(err)
 						}
 					} else {
-						if err = content.UpdateStatus(database.DoneStatus); err != nil {
+						if err = task.UpdateStatus(database.DoneStatus); err != nil {
 							logging.Error(err)
 						}
 					}
@@ -99,18 +103,18 @@ func RunTask() (err error) {
 	return
 }
 
-func TaskHandler(content database.Content) (err error) {
+func TaskHandler(task database.Task) (err error) {
 	var reader io.ReadCloser
 	var length int64
-	if reader, length, err = downloader(content.URL); err != nil {
+	if reader, length, err = downloader(task.URL); err != nil {
 		return
 	}
 
 	var bar = pb.Full.Start64(length)
-	ProgressBarPool.Store(content.Name, bar)
+	ProgressBarPool.Store(task.Name, bar)
 	var barReader = bar.NewProxyReader(reader)
 	defer func() {
-		ProgressBarPool.Delete(content.Name)
+		ProgressBarPool.Delete(task.Name)
 		bar.Finish()
 		if err := barReader.Close(); err != nil {
 			logging.Error(err)
@@ -122,11 +126,11 @@ func TaskHandler(content database.Content) (err error) {
 
 	var driver uploader.Driver
 	var upload = uploader.Uploader{
-		Content: content,
-		Length:  length,
-		Reader:  barReader,
+		Task:   task,
+		Length: length,
+		Reader: barReader,
 	}
-	switch content.Type {
+	switch task.Type {
 	case "qiniu":
 		driver = uploader.Qiniu{Uploader: upload}
 		if err = driver.Upload(); err != nil {
@@ -153,10 +157,22 @@ func TaskHandler(content database.Content) (err error) {
 			return
 		}
 	default:
-		err = fmt.Errorf("not support this type: %s", content.Type)
+		err = fmt.Errorf("not support this type: %s", task.Type)
 		return
 	}
-	logging.Infof("download file success: %v", content.Filename)
+	logging.Infof("download file success: %v", task.Filename)
+
+	if com.IsSliceContainsStr(viper.GetStringSlice("Notify"), "Email") {
+		if err = notify.Mail(task); err != nil {
+			return
+		}
+	}
+	if com.IsSliceContainsStr(viper.GetStringSlice("Notify"), "SMS") {
+		if err = notify.SMS(task); err != nil {
+			return
+		}
+	}
+
 	return
 }
 

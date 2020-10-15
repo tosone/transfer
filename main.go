@@ -81,34 +81,34 @@ func main() {
 	app.Use(requestid.New())
 
 	app.Get("/task", func(ctx *fiber.Ctx) (err error) {
-		var contents []database.Content
-		if contents, err = database.GetContents(); err != nil {
+		var tasks []database.Task
+		if tasks, err = database.GetContents(); err != nil {
 			return
 		}
-		for index, content := range contents {
-			contents[index].Progress = getProgress(content.Name)
+		for index, content := range tasks {
+			tasks[index].Progress = getProgress(content.Name)
 		}
-		if err = ctx.JSON(contents); err != nil {
+		if err = ctx.JSON(tasks); err != nil {
 			return
 		}
 		return
 	})
 
 	app.Get("/task/:name", func(ctx *fiber.Ctx) (err error) {
-		var content database.Content
-		if content, err = database.GetContentByName(ctx.Params("name")); err != nil {
+		var task database.Task
+		if task, err = database.GetContentByName(ctx.Params("name")); err != nil {
 			return
 		}
-		content.Progress = getProgress(content.Name)
-		if err = ctx.JSON(content); err != nil {
+		task.Progress = getProgress(task.Name)
+		if err = ctx.JSON(task); err != nil {
 			return
 		}
 		return
 	})
 
 	app.Post("/download", func(ctx *fiber.Ctx) (err error) {
-		var content = &database.Content{}
-		if err = ctx.BodyParser(content); err != nil {
+		var task = &database.Task{}
+		if err = ctx.BodyParser(task); err != nil {
 			ctx.Status(http.StatusBadRequest)
 			return
 		}
@@ -116,42 +116,42 @@ func main() {
 		if name, err = database.GenName(); err != nil {
 			return
 		}
-		content.Name = name
-		if content.RandomFilename {
+		task.Name = name
+		if task.RandomFilename {
 			var now = time.Now().Format("20060102")
 			var u *url.URL
-			if u, err = url.Parse(content.URL); err != nil {
+			if u, err = url.Parse(task.URL); err != nil {
 				return
 			}
 			var ext = filepath.Ext(u.Path)
 			if ext == "" {
-				err = fmt.Errorf("cannot get ext name: %s", content.URL)
+				err = fmt.Errorf("cannot get ext name: %s", task.URL)
 				ctx.Status(http.StatusBadRequest)
 				return
 			}
 			var filename = fmt.Sprintf("%s-%s%s", now, name, ext)
-			content.Filename = filename
+			task.Filename = filename
 		}
-		if !content.Force {
-			if _, err = database.GetContentByURL(content.URL); err != nil {
+		if !task.Force {
+			if _, err = database.GetContentByURL(task.URL); err != nil {
 				if err != badger.ErrKeyNotFound {
 					return
 				}
 				err = nil
 			} else {
-				err = fmt.Errorf("url conflict: %s, or you should set force true", content.URL)
+				err = fmt.Errorf("url conflict: %s, or you should set force true", task.URL)
 				ctx.Status(http.StatusConflict)
 				return
 			}
 		}
-		prefix.Path = filepath.Join(content.Path, content.Filename)
-		content.DownloadURL = prefix.String()
-		content.Status = database.PendingStatus
-		if err = content.Insert(); err != nil {
+		prefix.Path = filepath.Join(task.Path, task.Filename)
+		task.DownloadURL = prefix.String()
+		task.Status = database.PendingStatus
+		if err = task.Insert(); err != nil {
 			err = fmt.Errorf("database error: %v", err)
 			return
 		}
-		if err = ctx.JSON(content); err != nil {
+		if err = ctx.JSON(task); err != nil {
 			return
 		}
 		return
