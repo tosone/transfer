@@ -1,7 +1,7 @@
 Prefix:
 DatabaseDir: ./data
 
-Qiniu:
+qiniu:
     accessKey:
     secretKey:
     region:
@@ -11,3 +11,7 @@ OSS:
     secretKey:
     endpoint:
     bucket:
+COS:
+    region:
+    accessKey:
+    secretKey:
