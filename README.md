@@ -16,11 +16,11 @@
 
 ### API
 
-- 创建下载 POST `/download` 
+- 创建下载 POST `/task` 
 
-```
+``` json
 {
-    "type": "COS",
+    "type": "COS", // 下载到的文件将要存储的云存储类型
     "url": "https://tc.tosone.cn/20190703175351.png",
     "randomFilename": true,
     "path": ".",
@@ -31,3 +31,11 @@
 - 获取所有任务 GET `/task`
 
 - 获取任务的进度 GET `/task/{name}`
+
+### 设计与实现
+
+##### 数据库
+
+- Task 任务
+- URL 短链
+- Account 账户
