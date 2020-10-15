@@ -1,8 +1,6 @@
 # github.com/DataDog/zstd v1.4.5
 ## explicit
 github.com/DataDog/zstd
-# github.com/VividCortex/ewma v1.1.1
-github.com/VividCortex/ewma
 # github.com/aliyun/alibaba-cloud-sdk-go v1.61.569
 ## explicit
 github.com/aliyun/alibaba-cloud-sdk-go/sdk
@@ -72,10 +70,6 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 ## explicit
 # github.com/cespare/xxhash v1.1.0
 github.com/cespare/xxhash
-# github.com/cheggaaa/pb/v3 v3.0.5
-## explicit
-github.com/cheggaaa/pb/v3
-github.com/cheggaaa/pb/v3/termutil
 # github.com/dgraph-io/badger/v2 v2.2007.2
 ## explicit
 github.com/dgraph-io/badger/v2
@@ -95,7 +89,6 @@ github.com/dgryski/go-farm
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
 # github.com/fatih/color v1.9.0
-## explicit
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
@@ -149,13 +142,9 @@ github.com/klauspost/cpuid
 ## explicit
 github.com/magiconair/properties
 # github.com/mattn/go-colorable v0.1.8
-## explicit
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.9
-## explicit
-github.com/mattn/go-runewidth
 # github.com/minio/md5-simd v1.1.0
 github.com/minio/md5-simd
 # github.com/minio/minio-go/v7 v7.0.5
@@ -251,7 +240,6 @@ golang.org/x/net/internal/timeseries
 golang.org/x/net/publicsuffix
 golang.org/x/net/trace
 # golang.org/x/sys v0.0.0-20201015000850-e3ed0017c211
-## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
