@@ -3,6 +3,19 @@
 github.com/DataDog/zstd
 # github.com/VividCortex/ewma v1.1.1
 github.com/VividCortex/ewma
+# github.com/aliyun/alibaba-cloud-sdk-go v1.61.569
+## explicit
+github.com/aliyun/alibaba-cloud-sdk-go/sdk
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials/provider
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/signers
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/endpoints
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
+github.com/aliyun/alibaba-cloud-sdk-go/services/dysmsapi
 # github.com/aliyun/aliyun-oss-go-sdk v2.1.4+incompatible
 ## explicit
 github.com/aliyun/aliyun-oss-go-sdk/oss
@@ -279,6 +292,12 @@ google.golang.org/protobuf/reflect/protoreflect
 google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
 google.golang.org/protobuf/runtime/protoimpl
+# gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc
+## explicit
+gopkg.in/alexcesaro/quotedprintable.v3
+# gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
+## explicit
+gopkg.in/gomail.v2
 # gopkg.in/ini.v1 v1.62.0
 ## explicit
 gopkg.in/ini.v1

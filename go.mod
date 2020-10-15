@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
+	github.com/aliyun/alibaba-cloud-sdk-go v1.61.569
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.4+incompatible
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.35.7
@@ -40,6 +41,8 @@ require (
 	golang.org/x/sys v0.0.0-20201015000850-e3ed0017c211 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
