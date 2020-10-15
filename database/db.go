@@ -103,8 +103,8 @@ func (t *Task) UpdateStatus(status Status) (err error) {
 	return
 }
 
-// GetContentByName ..
-func GetContentByName(name string) (task Task, err error) {
+// GetTaskByName ..
+func GetTaskByName(name string) (task Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var item *badger.Item
 		if item, err = txn.Get([]byte(name)); err != nil {
@@ -124,8 +124,8 @@ func GetContentByName(name string) (task Task, err error) {
 	return
 }
 
-// GetContentByURL ..
-func GetContentByURL(url string) (task Task, err error) {
+// GetTaskByURL ..
+func GetTaskByURL(url string) (task Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
@@ -150,8 +150,8 @@ func GetContentByURL(url string) (task Task, err error) {
 	return
 }
 
-// GetContentsByStatus ..
-func GetContentsByStatus(status Status) (tasks []Task, err error) {
+// GetTasksByStatus ..
+func GetTasksByStatus(status Status) (tasks []Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
@@ -179,8 +179,8 @@ func GetContentsByStatus(status Status) (tasks []Task, err error) {
 	return
 }
 
-// GetContents get all of the content
-func GetContents() (tasks []Task, err error) {
+// GetTasks get all of the content
+func GetTasks() (tasks []Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
@@ -214,7 +214,7 @@ again:
 		return
 	}
 	name = hex.EncodeToString(hash.Sum(nil))
-	if _, err = GetContentByName(name); err == badger.ErrKeyNotFound {
+	if _, err = GetTaskByName(name); err == badger.ErrKeyNotFound {
 		err = nil
 		return
 	} else if err != nil {

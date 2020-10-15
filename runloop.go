@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cheggaaa/pb/v3"
 	"github.com/dgraph-io/badger/v2"
 	"github.com/spf13/viper"
 	"github.com/tosone/logging"
 	"github.com/unknwon/com"
 
+	"transfer/counter"
 	"transfer/database"
 	"transfer/notify"
 	"transfer/router"
@@ -26,7 +26,7 @@ const MaxTask = 4
 // RunTask ..
 func RunTask() (err error) {
 	var tasks []database.Task
-	if tasks, err = database.GetContentsByStatus(database.DoingStatus); err != nil {
+	if tasks, err = database.GetTasksByStatus(database.DoingStatus); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return
 		}
@@ -42,7 +42,7 @@ func RunTask() (err error) {
 		var err error
 		for {
 			var tasks []database.Task
-			if tasks, err = database.GetContentsByStatus(database.PendingStatus); err != nil {
+			if tasks, err = database.GetTasksByStatus(database.PendingStatus); err != nil {
 				if err != badger.ErrKeyNotFound {
 					logging.Error(err)
 				}
@@ -113,13 +113,14 @@ func TaskHandler(task database.Task) (err error) {
 		return
 	}
 
-	var bar = pb.Full.Start64(length)
-	router.ProgressBarPool.Store(task.Name, bar)
-	var barReader = bar.NewProxyReader(reader)
+	var proxyReader *counter.Reader
+	if proxyReader, err = counter.Proxy(reader, length); err != nil {
+		return
+	}
+	router.ProgressBarPool.Store(task.Name, proxyReader)
 	defer func() {
 		router.ProgressBarPool.Delete(task.Name)
-		bar.Finish()
-		if err := barReader.Close(); err != nil {
+		if err := proxyReader.Close(); err != nil {
 			logging.Error(err)
 		}
 		if err := reader.Close(); err != nil {
@@ -131,7 +132,7 @@ func TaskHandler(task database.Task) (err error) {
 	var upload = uploader.Uploader{
 		Task:   task,
 		Length: length,
-		Reader: barReader,
+		Reader: proxyReader,
 	}
 	switch task.Type {
 	case "qiniu":
@@ -156,6 +157,11 @@ func TaskHandler(task database.Task) (err error) {
 		}
 	case "s3":
 		driver = uploader.S3{Uploader: upload}
+		if err = driver.Upload(); err != nil {
+			return
+		}
+	case "local":
+		driver = uploader.Local{Uploader: upload}
 		if err = driver.Upload(); err != nil {
 			return
 		}

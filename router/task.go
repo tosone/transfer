@@ -23,7 +23,7 @@ func Task(app *fiber.App) (err error) {
 
 	app.Get("/task", func(ctx *fiber.Ctx) (err error) {
 		var tasks []database.Task
-		if tasks, err = database.GetContents(); err != nil {
+		if tasks, err = database.GetTasks(); err != nil {
 			return
 		}
 		for index, content := range tasks {
@@ -37,7 +37,7 @@ func Task(app *fiber.App) (err error) {
 
 	app.Get("/task/:name", func(ctx *fiber.Ctx) (err error) {
 		var task database.Task
-		if task, err = database.GetContentByName(ctx.Params("name")); err != nil {
+		if task, err = database.GetTaskByName(ctx.Params("name")); err != nil {
 			return
 		}
 		task.Progress = getProgress(task.Name)
@@ -74,7 +74,7 @@ func Task(app *fiber.App) (err error) {
 			task.Filename = filename
 		}
 		if !task.Force {
-			if _, err = database.GetContentByURL(task.URL); err != nil {
+			if _, err = database.GetTaskByURL(task.URL); err != nil {
 				if err != badger.ErrKeyNotFound {
 					return
 				}
