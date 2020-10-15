@@ -1,6 +1,17 @@
 Prefix:
 DatabaseDir: ./data
 
+Notify: []
+
+Email:
+    from:
+    to:
+    host:
+    port:
+    username:
+    password:
+    subject:
+
 qiniu:
     accessKey:
     secretKey:
