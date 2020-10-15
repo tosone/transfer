@@ -9,6 +9,7 @@ import (
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/spf13/viper"
+	"github.com/tosone/logging"
 )
 
 // Status ..
@@ -43,7 +44,9 @@ var dbEngine *badger.DB
 
 // Initialize ..
 func Initialize() (err error) {
-	if dbEngine, err = badger.Open(badger.DefaultOptions(viper.GetString("DatabaseDir"))); err != nil {
+	var options = badger.DefaultOptions(viper.GetString("DatabaseDir"))
+	options.Logger = &logging.Inst{}
+	if dbEngine, err = badger.Open(options); err != nil {
 		return
 	}
 	return

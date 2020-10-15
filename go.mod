@@ -33,7 +33,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.10
-	github.com/tosone/logging v1.1.0
+	github.com/tosone/logging v1.2.0
 	github.com/unknwon/com v1.0.1
 	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee // indirect
 	golang.org/x/net v0.0.0-20201010224723-4f7140c49acb // indirect

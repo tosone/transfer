@@ -326,6 +326,8 @@ github.com/tencentyun/cos-go-sdk-v5 v0.7.10/go.mod h1:wQBO5HdAkLjj2q6XQiIfDSP8DX
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tosone/logging v1.1.0 h1:QSlelHJaWBr6TVCBoT+67E8uMh7AczudtSxEnNgTWPY=
 github.com/tosone/logging v1.1.0/go.mod h1:B6PrQaWT7v9fepd42ZJWq/eT6VK3BVQHOZUogaMhz8g=
+github.com/tosone/logging v1.2.0 h1:NRUHO+Jf3Be2RJEQjECmJvI23w6jfhrooSYfCwhr6/A=
+github.com/tosone/logging v1.2.0/go.mod h1:sXH97ncQbiy7rCCNIirJ25cUdDsDJ9W/9rUik5iTj6A=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/unknwon/com v1.0.1 h1:3d1LTxD+Lnf3soQiD4Cp/0BRB+Rsa/+RTvz8GMMzIXs=
 github.com/unknwon/com v1.0.1/go.mod h1:tOOxU81rwgoCLoOVVPHb6T/wt8HZygqH5id+GNnlCXM=
