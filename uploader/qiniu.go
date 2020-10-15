@@ -3,35 +3,29 @@ package uploader
 import (
 	"context"
 	"fmt"
-	"io"
 	"path/filepath"
 
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	"github.com/qiniu/api.v7/v7/storage"
 	"github.com/spf13/viper"
-	"github.com/tosone/logging"
-
-	"transfer/database"
 )
 
 // Qiniu ..
 type Qiniu struct {
-	Content database.Content
-	Length  int64
-	Reader  io.ReadCloser
+	Uploader
 }
 
 // Upload ..
-func (q Qiniu) Upload() (err error) {
+func (d Qiniu) Upload() (err error) {
 	var putPolicy = storage.PutPolicy{
-		Scope: viper.GetString("Qiniu.bucket"),
+		Scope: viper.GetString("qiniu.bucket"),
 	}
 
-	var mac = qbox.NewMac(viper.GetString("Qiniu.accessKey"), viper.GetString("Qiniu.secretKey"))
+	var mac = qbox.NewMac(viper.GetString("qiniu.accessKey"), viper.GetString("qiniu.secretKey"))
 	var upToken = putPolicy.UploadToken(mac)
 	var region storage.Region
 	var exist bool
-	if region, exist = storage.GetRegionByID(storage.RegionID(viper.GetString("Qiniu.region"))); !exist {
+	if region, exist = storage.GetRegionByID(storage.RegionID(viper.GetString("qiniu.region"))); !exist {
 		err = fmt.Errorf("cannot find the specific region")
 		return
 	}
@@ -43,9 +37,10 @@ func (q Qiniu) Upload() (err error) {
 	var formUploader = storage.NewFormUploader(&cfg)
 	var ret = storage.PutRet{}
 	var putExtra = storage.PutExtra{Params: map[string]string{}}
-	if err = formUploader.Put(context.Background(), &ret, upToken, filepath.Join(q.Content.Path, q.Content.Filename),
-		q.Reader, q.Length, &putExtra); err != nil {
-		logging.Error(err)
+	var filename = filepath.Join(d.Content.Path, d.Content.Filename)
+	if err = formUploader.Put(context.Background(), &ret, upToken, filename,
+		d.Reader, d.Length, &putExtra); err != nil {
+		return
 	}
 	return
 }

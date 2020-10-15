@@ -79,6 +79,7 @@ func RunTask() (err error) {
 					defer DownloadPool.Delete(content.Name)
 
 					if err = TaskHandler(content); err != nil {
+						logging.Error(err)
 						if err = content.UpdateStatus(database.ErrorStatus); err != nil {
 							logging.Error(err)
 						}
@@ -120,21 +121,30 @@ func TaskHandler(content database.Content) (err error) {
 	}()
 
 	var driver uploader.Driver
+	var upload = uploader.Uploader{
+		Content: content,
+		Length:  length,
+		Reader:  barReader,
+	}
 	switch content.Type {
 	case "qiniu":
 		driver = uploader.Qiniu{
-			Content: content,
-			Length:  length,
-			Reader:  barReader,
+			Uploader: upload,
 		}
 		if err = driver.Upload(); err != nil {
 			return
 		}
 	case "OSS":
 		driver = uploader.OSS{
-			Content: content,
-			Length:  length,
-			Reader:  barReader,
+			Uploader: upload,
+		}
+		if err = driver.Upload(); err != nil {
+			return
+		}
+		return
+	case "COS":
+		driver = uploader.COS{
+			Uploader: upload,
 		}
 		if err = driver.Upload(); err != nil {
 			return

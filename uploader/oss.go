@@ -1,25 +1,20 @@
 package uploader
 
 import (
-	"io"
 	"path/filepath"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/spf13/viper"
 	"github.com/tosone/logging"
-
-	"transfer/database"
 )
 
 // OSS ..
 type OSS struct {
-	Content database.Content
-	Length  int64
-	Reader  io.ReadCloser
+	Uploader
 }
 
 // Upload ..
-func (o OSS) Upload() (err error) {
+func (d OSS) Upload() (err error) {
 	var client *oss.Client
 	if client, err = oss.New(viper.GetString("OSS.endpoint"),
 		viper.GetString("OSS.accessKey"), viper.GetString("OSS.secretKey")); err != nil {
@@ -29,7 +24,8 @@ func (o OSS) Upload() (err error) {
 	if bucketObj, err = client.Bucket(viper.GetString("OSS.bucket")); err != nil {
 		return
 	}
-	if err = bucketObj.PutObject(filepath.Join(o.Content.Path, o.Content.Filename), o.Reader); err != nil {
+	var filename = filepath.Join(d.Content.Path, d.Content.Filename)
+	if err = bucketObj.PutObject(filename, d.Reader); err != nil {
 		logging.Error(err)
 	}
 	return
