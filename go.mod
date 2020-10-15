@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.569
+	github.com/aliyun/alibaba-cloud-sdk-go v1.61.572
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.4+incompatible
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.35.7
@@ -13,8 +13,8 @@ require (
 	github.com/dgraph-io/ristretto v0.0.3 // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/gofiber/fiber/v2 v2.0.6
-	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/gofiber/fiber/v2 v2.1.0
+	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
