@@ -26,7 +26,7 @@ const (
 	DoingStatus Status = "doing"
 )
 
-type Content struct {
+type Task struct {
 	Name           string `json:"name"`
 	Type           string `json:"type"`
 	URL            string `json:"url"`
@@ -61,7 +61,7 @@ func Teardown() (err error) {
 }
 
 // Insert ..
-func (t *Content) Insert() (err error) {
+func (t *Task) Insert() (err error) {
 	var txn = dbEngine.NewTransaction(true)
 
 	var data []byte
@@ -80,7 +80,7 @@ func (t *Content) Insert() (err error) {
 }
 
 // UpdateStatus ..
-func (t *Content) UpdateStatus(status Status) (err error) {
+func (t *Task) UpdateStatus(status Status) (err error) {
 	var txn = dbEngine.NewTransaction(true)
 	defer func() {
 		if err = txn.Commit(); err != nil {
@@ -104,7 +104,7 @@ func (t *Content) UpdateStatus(status Status) (err error) {
 }
 
 // GetContentByName ..
-func GetContentByName(name string) (content Content, err error) {
+func GetContentByName(name string) (task Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var item *badger.Item
 		if item, err = txn.Get([]byte(name)); err != nil {
@@ -114,7 +114,7 @@ func GetContentByName(name string) (content Content, err error) {
 		if _, err = item.ValueCopy(data); err != nil {
 			return
 		}
-		if err = json.Unmarshal(data, &content); err != nil {
+		if err = json.Unmarshal(data, &task); err != nil {
 			return
 		}
 		return
@@ -125,7 +125,7 @@ func GetContentByName(name string) (content Content, err error) {
 }
 
 // GetContentByURL ..
-func GetContentByURL(url string) (content Content, err error) {
+func GetContentByURL(url string) (task Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
@@ -135,10 +135,10 @@ func GetContentByURL(url string) (content Content, err error) {
 			if _, err = item.ValueCopy(data); err != nil {
 				return
 			}
-			if err = json.Unmarshal(data, &content); err != nil {
+			if err = json.Unmarshal(data, &task); err != nil {
 				return
 			}
-			if content.URL == url {
+			if task.URL == url {
 				return
 			}
 		}
@@ -151,7 +151,7 @@ func GetContentByURL(url string) (content Content, err error) {
 }
 
 // GetContentsByStatus ..
-func GetContentsByStatus(status Status) (contents []Content, err error) {
+func GetContentsByStatus(status Status) (tasks []Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
@@ -161,26 +161,26 @@ func GetContentsByStatus(status Status) (contents []Content, err error) {
 			if _, err = item.ValueCopy(data); err != nil {
 				return
 			}
-			var content Content
-			if err = json.Unmarshal(data, &content); err != nil {
+			var task Task
+			if err = json.Unmarshal(data, &task); err != nil {
 				return
 			}
-			if content.Status == status {
-				contents = append(contents, content)
+			if task.Status == status {
+				tasks = append(tasks, task)
 			}
 		}
 		return
 	}); err != nil {
 		return
 	}
-	if len(contents) == 0 {
+	if len(tasks) == 0 {
 		err = badger.ErrKeyNotFound
 	}
 	return
 }
 
 // GetContents get all of the content
-func GetContents() (contents []Content, err error) {
+func GetContents() (tasks []Task, err error) {
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
@@ -190,17 +190,17 @@ func GetContents() (contents []Content, err error) {
 			if _, err = item.ValueCopy(data); err != nil {
 				return
 			}
-			var content Content
-			if err = json.Unmarshal(data, &content); err != nil {
+			var task Task
+			if err = json.Unmarshal(data, &task); err != nil {
 				return
 			}
-			contents = append(contents, content)
+			tasks = append(tasks, task)
 		}
 		return
 	}); err != nil {
 		return
 	}
-	if len(contents) == 0 {
+	if len(tasks) == 0 {
 		err = badger.ErrKeyNotFound
 	}
 	return

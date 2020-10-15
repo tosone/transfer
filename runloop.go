@@ -6,22 +6,24 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"transfer/notify"
-
-	"github.com/spf13/viper"
-	"github.com/unknwon/com"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/dgraph-io/badger/v2"
+	"github.com/spf13/viper"
 	"github.com/tosone/logging"
+	"github.com/unknwon/com"
 
 	"transfer/database"
+	"transfer/notify"
+	"transfer/router"
 	"transfer/sizewg"
 	"transfer/uploader"
 )
 
+// MaxTask ..
 const MaxTask = 4
 
+// RunTask ..
 func RunTask() (err error) {
 	var tasks []database.Task
 	if tasks, err = database.GetContentsByStatus(database.DoingStatus); err != nil {
@@ -103,6 +105,7 @@ func RunTask() (err error) {
 	return
 }
 
+// TaskHandler ..
 func TaskHandler(task database.Task) (err error) {
 	var reader io.ReadCloser
 	var length int64
@@ -111,10 +114,10 @@ func TaskHandler(task database.Task) (err error) {
 	}
 
 	var bar = pb.Full.Start64(length)
-	ProgressBarPool.Store(task.Name, bar)
+	router.ProgressBarPool.Store(task.Name, bar)
 	var barReader = bar.NewProxyReader(reader)
 	defer func() {
-		ProgressBarPool.Delete(task.Name)
+		router.ProgressBarPool.Delete(task.Name)
 		bar.Finish()
 		if err := barReader.Close(); err != nil {
 			logging.Error(err)
