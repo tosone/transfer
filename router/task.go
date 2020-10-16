@@ -23,11 +23,24 @@ func Task(app *fiber.App) (err error) {
 
 	app.Get("/task", func(ctx *fiber.Ctx) (err error) {
 		var tasks []database.Task
-		if tasks, err = database.GetTasks(); err != nil {
-			return
+		var status = database.Status(ctx.Query("status"))
+		if status != "" {
+			if tasks, err = database.GetTasksByStatus(status); err != nil {
+				return
+			}
+		} else {
+			if tasks, err = database.GetTasks(); err != nil {
+				return
+			}
 		}
 		for index, content := range tasks {
-			tasks[index].Progress = getProgress(content.Name)
+			if content.Status == database.DoneStatus {
+				tasks[index].Progress = 100
+			} else {
+				if tasks[index].Progress, err = getProgress(content.Name); err != nil {
+					return
+				}
+			}
 		}
 		if err = ctx.JSON(tasks); err != nil {
 			return
@@ -40,7 +53,9 @@ func Task(app *fiber.App) (err error) {
 		if task, err = database.GetTaskByName(ctx.Params("name")); err != nil {
 			return
 		}
-		task.Progress = getProgress(task.Name)
+		if task.Progress, err = getProgress(task.Name); err != nil {
+			return
+		}
 		if err = ctx.JSON(task); err != nil {
 			return
 		}

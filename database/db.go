@@ -27,17 +27,18 @@ const (
 )
 
 type Task struct {
-	Name           string `json:"name"`
-	Type           string `json:"type"`
-	URL            string `json:"url"`
-	DownloadURL    string `json:"downloadUrl"`
-	Filename       string `json:"filename"`
-	RandomFilename bool   `json:"randomFilename"`
-	Path           string `json:"path"`
-	Force          bool   `json:"force"`
-	Progress       string `json:"progress"`
-	Status         Status `json:"status"`
-	Message        string `json:"message"`
+	Name           string  `json:"name"`
+	UploadType     string  `json:"uploadType"`
+	URL            string  `json:"url"`
+	DownloadType   string  `json:"downloadType"`
+	DownloadURL    string  `json:"downloadUrl"` // user can download file from this url
+	Filename       string  `json:"filename"`
+	RandomFilename bool    `json:"randomFilename"`
+	Path           string  `json:"path"`
+	Force          bool    `json:"force"`
+	Progress       float64 `json:"progress"`
+	Status         Status  `json:"status"`
+	Message        string  `json:"message"`
 }
 
 var dbEngine *badger.DB

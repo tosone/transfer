@@ -18,7 +18,7 @@
 
 - 创建下载 POST `/task` 
 
-``` json
+``` javascript
 {
     "type": "COS", // 下载到的文件将要存储的云存储类型
     "url": "https://tc.tosone.cn/20190703175351.png",

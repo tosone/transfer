@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"io"
-	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
@@ -14,14 +11,12 @@ import (
 
 	"transfer/counter"
 	"transfer/database"
+	"transfer/downloader"
 	"transfer/notify"
 	"transfer/router"
 	"transfer/sizewg"
 	"transfer/uploader"
 )
-
-// MaxTask ..
-const MaxTask = 4
 
 // RunTask ..
 func RunTask() (err error) {
@@ -38,6 +33,7 @@ func RunTask() (err error) {
 		}
 	}
 
+	var taskWaitGroup = sizewg.New(viper.GetInt("Config.ParallelTask"))
 	go func() {
 		var err error
 		for {
@@ -51,38 +47,13 @@ func RunTask() (err error) {
 				continue
 			}
 			for _, task := range tasks {
-				DownloadPool.Store(task.Name, task)
+				taskWaitGroup.Add() // reach to the max task will be blocked
+				logging.Infof("task %s is starting: %s", task.Name, task.URL)
 				if err = task.UpdateStatus(database.DoingStatus); err != nil {
 					logging.Error(err)
 				}
-			}
-			<-time.After(time.Second)
-		}
-	}()
-
-	var taskWaitGroup = sizewg.New(MaxTask)
-
-	go func() {
-		var err error
-		for {
-			DownloadPool.Range(func(key, value interface{}) bool {
-				var name = key.(string)
-				var task = value.(database.Task)
-
-				if task.Status != database.PendingStatus {
-					return true
-				}
-
-				taskWaitGroup.Add() // reach to the max task will be blocked
-
-				logging.Infof("task %s is starting: %s", name, task.URL)
-
-				task.Status = database.DoingStatus
-				DownloadPool.Store(key, task)
-
-				go func() {
+				go func(task database.Task) {
 					defer taskWaitGroup.Done()
-					defer DownloadPool.Delete(task.Name)
 
 					if err = TaskHandler(task); err != nil {
 						logging.Error(err)
@@ -94,10 +65,8 @@ func RunTask() (err error) {
 							logging.Error(err)
 						}
 					}
-				}()
-
-				return true
-			})
+				}(task)
+			}
 			<-time.After(time.Second)
 		}
 	}()
@@ -109,10 +78,9 @@ func RunTask() (err error) {
 func TaskHandler(task database.Task) (err error) {
 	var reader io.ReadCloser
 	var length int64
-	if reader, length, err = downloader(task.URL); err != nil {
+	if reader, length, err = downloader.Download(task.DownloadType, task); err != nil {
 		return
 	}
-
 	var proxyReader *counter.Reader
 	if proxyReader, err = counter.Proxy(reader, length); err != nil {
 		return
@@ -128,45 +96,12 @@ func TaskHandler(task database.Task) (err error) {
 		}
 	}()
 
-	var driver uploader.Driver
 	var upload = uploader.Uploader{
 		Task:   task,
 		Length: length,
 		Reader: proxyReader,
 	}
-	switch task.Type {
-	case "qiniu":
-		driver = uploader.Qiniu{Uploader: upload}
-		if err = driver.Upload(); err != nil {
-			return
-		}
-	case "OSS":
-		driver = uploader.OSS{Uploader: upload}
-		if err = driver.Upload(); err != nil {
-			return
-		}
-	case "COS":
-		driver = uploader.COS{Uploader: upload}
-		if err = driver.Upload(); err != nil {
-			return
-		}
-	case "minio":
-		driver = uploader.Minio{Uploader: upload}
-		if err = driver.Upload(); err != nil {
-			return
-		}
-	case "s3":
-		driver = uploader.S3{Uploader: upload}
-		if err = driver.Upload(); err != nil {
-			return
-		}
-	case "local":
-		driver = uploader.Local{Uploader: upload}
-		if err = driver.Upload(); err != nil {
-			return
-		}
-	default:
-		err = fmt.Errorf("not support this type: %s", task.Type)
+	if err = uploader.Upload(task.UploadType, upload); err != nil {
 		return
 	}
 	logging.Infof("download file success: %v", task.Filename)
@@ -182,18 +117,5 @@ func TaskHandler(task database.Task) (err error) {
 		}
 	}
 
-	return
-}
-
-func downloader(url string) (reader io.ReadCloser, length int64, err error) {
-	var resp *http.Response
-	if resp, err = http.Get(url); err != nil {
-		return
-	}
-	reader = resp.Body
-	if length, err = strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64); err != nil {
-		err = fmt.Errorf("cannot get Content-Length in http header: %v", err)
-		return
-	}
 	return
 }

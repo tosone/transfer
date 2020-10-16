@@ -15,10 +15,10 @@ func Mail(content database.Task) (err error) {
 	msg.SetBody("text/html", content.Name)
 
 	var mail = gomail.NewDialer(
-		viper.GetString("PeopleEmailHost"),
-		viper.GetInt("PeopleEmailPort"),
-		viper.GetString("PeopleEmailUsername"),
-		viper.GetString("PeopleEmailPassword"),
+		viper.GetString("Email.host"),
+		viper.GetInt("Email.port"),
+		viper.GetString("Email.username"),
+		viper.GetString("Email.password"),
 	)
 	if err = mail.DialAndSend(msg); err != nil {
 		return

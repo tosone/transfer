@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
@@ -17,9 +16,6 @@ import (
 	"transfer/database"
 	"transfer/router"
 )
-
-// DownloadPool ..
-var DownloadPool = sync.Map{}
 
 // ConfigFile default config path
 const ConfigFile = "/etc/transfer/config.yaml"

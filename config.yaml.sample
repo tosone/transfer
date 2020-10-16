@@ -3,6 +3,9 @@ DatabaseDir: ./data
 
 Notify: []
 
+Config:
+    ParallelTask: 4
+
 Email:
     from:
     to:
