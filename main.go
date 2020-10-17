@@ -49,11 +49,6 @@ func main() {
 	if err = database.Initialize(); err != nil {
 		logging.Fatal(err)
 	}
-	defer func() {
-		if err = database.Teardown(); err != nil {
-			logging.Error(err)
-		}
-	}()
 
 	if err = RunTask(); err != nil {
 		logging.Fatal(err)
@@ -64,7 +59,7 @@ func main() {
 	app.Use(compress.New())
 	app.Use(requestid.New())
 
-	if err = router.Task(app); err != nil {
+	if err = router.Initialize(app); err != nil {
 		logging.Fatal(err)
 	}
 
@@ -80,4 +75,8 @@ func main() {
 	<-signalChanel
 
 	logging.Info("transfer has been stopped")
+
+	if err = database.Teardown(); err != nil {
+		logging.Error(err)
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"hash/fnv"
+	"io"
 	"strconv"
 	"time"
 
@@ -59,6 +60,15 @@ func Teardown() (err error) {
 		return
 	}
 	return
+}
+
+// Backup ..
+func Backup(w io.Writer, since uint64) (uint64, error) {
+	return dbEngine.Backup(w, since)
+}
+
+func Load(r io.Reader, maxPendingWrites int) error {
+	return dbEngine.Load(r, maxPendingWrites)
 }
 
 // Insert ..
