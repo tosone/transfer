@@ -1,14 +1,18 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/requestid"
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/tosone/logging"
 	"github.com/unknwon/com"
@@ -19,6 +23,8 @@ import (
 
 // ConfigFile default config path
 const ConfigFile = "/etc/transfer/config.yaml"
+
+var appStopped bool
 
 // Config ..
 func Config() (err error) {
@@ -54,17 +60,23 @@ func main() {
 		logging.Fatal(err)
 	}
 
-	var app = fiber.New()
-
-	app.Use(compress.New())
+	gin.SetMode(gin.ReleaseMode)
+	var app = gin.Default()
+	app.Use(cors.Default())
+	app.Use(gzip.Gzip(gzip.DefaultCompression))
 	app.Use(requestid.New())
+
+	var srv = &http.Server{
+		Addr:    ":8080",
+		Handler: app,
+	}
 
 	if err = router.Initialize(app); err != nil {
 		logging.Fatal(err)
 	}
 
 	go func() {
-		if err = app.Listen(":3000"); err != nil {
+		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logging.Fatal(err)
 		}
 	}()
@@ -74,9 +86,21 @@ func main() {
 
 	<-signalChanel
 
-	logging.Info("transfer has been stopped")
+	logging.Info("transfer is stopping")
 
+	appStopped = true
+
+	stopWaitGroup.Wait()
+
+	logging.Info("database is stopping")
 	if err = database.Teardown(); err != nil {
+		logging.Error(err)
+	}
+
+	logging.Info("server is stopping")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err = srv.Shutdown(ctx); err != nil {
 		logging.Error(err)
 	}
 }

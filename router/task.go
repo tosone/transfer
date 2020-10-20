@@ -7,29 +7,31 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/dgraph-io/badger/v2"
-	"github.com/gofiber/fiber/v2"
-	"github.com/spf13/viper"
-
 	"transfer/database"
+
+	"github.com/dgraph-io/badger/v2"
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 // Task ..
-func Task(app *fiber.App) (err error) {
+func Task(app *gin.Engine) (err error) {
 	var prefix *url.URL
 	if prefix, err = url.Parse(viper.GetString("Prefix")); err != nil {
 		return
 	}
 
-	app.Get("/task", func(ctx *fiber.Ctx) (err error) {
+	app.GET("/task", func(ctx *gin.Context) {
 		var tasks []database.Task
 		var status = database.Status(ctx.Query("status"))
 		if status != "" {
 			if tasks, err = database.GetTasksByStatus(status); err != nil {
+				_ = ctx.Error(errDatabase.Build(err))
 				return
 			}
 		} else {
 			if tasks, err = database.GetTasks(); err != nil {
+				_ = ctx.Error(errDatabase.Build(err))
 				return
 			}
 		}
@@ -38,34 +40,33 @@ func Task(app *fiber.App) (err error) {
 				tasks[index].Progress = 100
 			} else {
 				if tasks[index].Progress, err = getProgress(content.Name); err != nil {
+					_ = ctx.Error(errServerInternal.Build(err))
 					return
 				}
 			}
 		}
-		if err = ctx.JSON(tasks); err != nil {
-			return
-		}
+		ctx.JSON(http.StatusOK, tasks)
 		return
 	})
 
-	app.Get("/task/:name", func(ctx *fiber.Ctx) (err error) {
+	app.GET("/task/:name", func(ctx *gin.Context) {
 		var task database.Task
-		if task, err = database.GetTaskByName(ctx.Params("name")); err != nil {
+		if task, err = database.GetTaskByName(ctx.Param("name")); err != nil {
+			_ = ctx.Error(errDatabase.Build(err))
 			return
 		}
 		if task.Progress, err = getProgress(task.Name); err != nil {
+			_ = ctx.Error(errServerInternal.Build(err))
 			return
 		}
-		if err = ctx.JSON(task); err != nil {
-			return
-		}
+		ctx.JSON(http.StatusOK, task)
 		return
 	})
 
-	app.Post("/task", func(ctx *fiber.Ctx) (err error) {
+	app.POST("/task", func(ctx *gin.Context) {
 		var task = &database.Task{}
-		if err = ctx.BodyParser(task); err != nil {
-			ctx.Status(http.StatusBadRequest)
+		if err = ctx.Bind(task); err != nil {
+			_ = ctx.Error(errBadRequest.Build(err))
 			return
 		}
 		var name string
@@ -81,8 +82,7 @@ func Task(app *fiber.App) (err error) {
 			}
 			var ext = filepath.Ext(u.Path)
 			if ext == "" {
-				err = fmt.Errorf("cannot get ext name: %s", task.URL)
-				ctx.Status(http.StatusBadRequest)
+				_ = ctx.Error(errBadRequest.Build(fmt.Sprintf("cannot get ext name %s", task.URL)))
 				return
 			}
 			var filename = fmt.Sprintf("%s-%s%s", now, name, ext)
@@ -95,8 +95,7 @@ func Task(app *fiber.App) (err error) {
 				}
 				err = nil
 			} else {
-				err = fmt.Errorf("url conflict: %s, or you should set force true", task.URL)
-				ctx.Status(http.StatusConflict)
+				_ = ctx.Error(errBadRequest.Build(errURLConflict.Build(task.URL)))
 				return
 			}
 		}
@@ -104,12 +103,10 @@ func Task(app *fiber.App) (err error) {
 		task.DownloadURL = prefix.String()
 		task.Status = database.PendingStatus
 		if err = task.Insert(); err != nil {
-			err = fmt.Errorf("database error: %v", err)
+			_ = ctx.Error(errDatabase.Build(err))
 			return
 		}
-		if err = ctx.JSON(task); err != nil {
-			return
-		}
+		ctx.JSON(http.StatusOK, task)
 		return
 	})
 

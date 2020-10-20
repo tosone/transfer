@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
@@ -18,6 +19,8 @@ import (
 	"transfer/uploader"
 )
 
+var stopWaitGroup = &sync.WaitGroup{}
+
 // RunTask ..
 func RunTask() (err error) {
 	var tasks []database.Task
@@ -33,14 +36,19 @@ func RunTask() (err error) {
 		}
 	}
 
+	stopWaitGroup.Add(1)
 	var taskWaitGroup = sizewg.New(viper.GetInt("Config.ParallelTask"))
 	go func() {
+		defer stopWaitGroup.Done()
 		var err error
-		for {
+		for !appStopped {
 			var tasks []database.Task
 			if tasks, err = database.GetTasksByStatus(database.PendingStatus); err != nil {
 				if err != badger.ErrKeyNotFound {
 					logging.Error(err)
+				}
+				if err == badger.ErrDBClosed {
+					break
 				}
 				err = nil
 				<-time.After(time.Second)
@@ -48,12 +56,14 @@ func RunTask() (err error) {
 			}
 			for _, task := range tasks {
 				taskWaitGroup.Add() // reach to the max task will be blocked
+				stopWaitGroup.Add(1)
 				logging.Infof("task %s is starting: %s", task.Name, task.URL)
 				if err = task.UpdateStatus(database.DoingStatus); err != nil {
 					logging.Error(err)
 				}
 				go func(task database.Task) {
 					defer taskWaitGroup.Done()
+					defer stopWaitGroup.Done()
 
 					if err = TaskHandler(task); err != nil {
 						logging.Error(err)

@@ -1,9 +1,12 @@
 package router
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 // Initialize ..
-func Initialize(app *fiber.App) (err error) {
+func Initialize(app *gin.Engine) (err error) {
+	app.Use(errorHandler())
 	if err = Task(app); err != nil {
 		return
 	}

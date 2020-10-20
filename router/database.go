@@ -1,22 +1,20 @@
 package router
 
 import (
-	"bufio"
+	"io"
 	"mime/multipart"
 	"os"
-	"path/filepath"
 	"sync"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 
 	"transfer/database"
 )
 
 // Database ..
-func Database(app *fiber.App) (err error) {
+func Database(app *gin.Engine) (err error) {
 	var databaseLocker = &sync.Mutex{}
-	const backupFile = "backupFile.db"
 	const backupDir = "./data"
 
 	if !com.IsDir(backupDir) {
@@ -25,59 +23,43 @@ func Database(app *fiber.App) (err error) {
 		}
 	}
 
-	app.Get("/database", func(ctx *fiber.Ctx) (err error) {
+	app.GET("/database", func(ctx *gin.Context) {
 		databaseLocker.Lock()
 		defer databaseLocker.Unlock()
 
-		var file *os.File
-		if file, err = os.Create(filepath.Join(backupDir, backupFile)); err != nil {
+		ctx.Header("Content-Disposition", `attachment; filename="backup.db"`)
+
+		_ = ctx.Stream(func(w io.Writer) bool {
+			if _, err = database.Backup(w, 0); err != nil {
+				_ = ctx.Error(errServerInternal.Build(err))
+			}
+			return false
+		})
+	})
+	app.POST("/database", func(ctx *gin.Context) {
+		databaseLocker.Lock()
+		defer databaseLocker.Unlock()
+
+		var fileHeader *multipart.FileHeader
+		if fileHeader, err = ctx.FormFile("file"); err != nil {
+			_ = ctx.Error(errBadRequest.Build(err))
 			return
 		}
-		var bw = bufio.NewWriterSize(file, 64<<20)
-		if _, err = database.Backup(bw, 0); err != nil {
+		var file multipart.File
+		if file, err = fileHeader.Open(); err != nil {
+			_ = ctx.Error(errServerInternal.Build(err))
 			return
 		}
-		if err = bw.Flush(); err != nil {
+
+		if err = database.Load(file, 4); err != nil {
+			_ = ctx.Error(errServerInternal.Build(err))
 			return
-		}
-		if err = file.Sync(); err != nil {
-			return err
 		}
 		if err = file.Close(); err != nil {
-			return
-		}
-		if err = ctx.SendFile(filepath.Join(backupDir, backupFile), true); err != nil {
+			_ = ctx.Error(errServerInternal.Build(err))
 			return
 		}
 		return
-	})
-	app.Post("/database", func(ctx *fiber.Ctx) (err error) {
-		databaseLocker.Lock()
-		defer databaseLocker.Unlock()
-
-		var multipartForm *multipart.Form
-		if multipartForm, err = ctx.MultipartForm(); err != nil {
-			return
-		}
-		var files = multipartForm.File["file"]
-		var filename string
-		for _, file := range files {
-			filename = filepath.Join(backupDir, file.Filename)
-			if err := ctx.SaveFile(file, filename); err != nil {
-				return err
-			}
-		}
-		var file *os.File
-		if file, err = os.Open(filename); err != nil {
-			return
-		}
-		if err = database.Load(file, 4); err != nil {
-			return
-		}
-		if err = file.Close(); err != nil {
-			return
-		}
-		return ctx.SendString("ok")
 	})
 	return
 }
