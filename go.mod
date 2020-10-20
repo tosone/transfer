@@ -4,20 +4,22 @@ go 1.15
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.583
+	github.com/aliyun/alibaba-cloud-sdk-go v1.61.584
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.4+incompatible
-	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.35.10
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/dgraph-io/ristretto v0.0.3 // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/gofiber/fiber/v2 v2.1.0
+	github.com/gin-contrib/cors v1.3.1
+	github.com/gin-contrib/gzip v0.0.3
+	github.com/gin-contrib/requestid v0.0.1
+	github.com/gin-gonic/gin v1.6.3
+	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/uuid v1.1.2 // indirect
-	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
@@ -31,6 +33,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.10
 	github.com/tosone/logging v1.2.1
+	github.com/ugorji/go v1.1.13 // indirect
 	github.com/unknwon/com v1.0.1
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/net v0.0.0-20201020065357-d65d470038a5 // indirect
