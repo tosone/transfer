@@ -39,8 +39,7 @@ func errorHandler() gin.HandlerFunc {
 
 		if len(ctx.Errors) > 0 {
 			if ctx.Errors[0].IsType(gin.ErrorTypePrivate) {
-				var err = ctx.Errors[0].Err.(ErrBody)
-				ctx.JSON(err.Code, gin.H{"error": err.Msg})
+				ctx.JSON(ctx.Errors[0].Err.(ErrBody).Code, ctx.Errors[0].JSON())
 			} else {
 				ctx.JSON(http.StatusInternalServerError, ctx.Errors[0].JSON())
 			}
