@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"transfer/database"
-
 	"github.com/dgraph-io/badger/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+
+	"transfer/database"
 )
 
 // Task ..
