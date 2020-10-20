@@ -60,7 +60,9 @@ func main() {
 		logging.Fatal(err)
 	}
 
-	gin.SetMode(gin.ReleaseMode)
+	if !viper.GetBool("Debug") {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	var app = gin.Default()
 	app.Use(cors.Default())
 	app.Use(gzip.Gzip(gzip.DefaultCompression))
