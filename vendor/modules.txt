@@ -1,7 +1,7 @@
 # github.com/DataDog/zstd v1.4.5
 ## explicit
 github.com/DataDog/zstd
-# github.com/aliyun/alibaba-cloud-sdk-go v1.61.584
+# github.com/aliyun/alibaba-cloud-sdk-go v1.61.652
 ## explicit
 github.com/aliyun/alibaba-cloud-sdk-go/sdk
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
@@ -17,7 +17,7 @@ github.com/aliyun/alibaba-cloud-sdk-go/services/dysmsapi
 # github.com/aliyun/aliyun-oss-go-sdk v2.1.4+incompatible
 ## explicit
 github.com/aliyun/aliyun-oss-go-sdk/oss
-# github.com/aws/aws-sdk-go v1.35.10
+# github.com/aws/aws-sdk-go v1.35.28
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -85,7 +85,8 @@ github.com/dgraph-io/ristretto/z
 github.com/dgryski/go-farm
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
-# github.com/fatih/color v1.9.0
+# github.com/fatih/color v1.10.0
+## explicit
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
@@ -218,37 +219,38 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/tencentyun/cos-go-sdk-v5 v0.7.10
+# github.com/tencentyun/cos-go-sdk-v5 v0.7.11
 ## explicit
 github.com/tencentyun/cos-go-sdk-v5
 # github.com/tosone/logging v1.2.1
 ## explicit
 github.com/tosone/logging
-# github.com/ugorji/go v1.1.13
+# github.com/ugorji/go v1.2.0
 ## explicit
-# github.com/ugorji/go/codec v1.1.13
+# github.com/ugorji/go/codec v1.2.0
 github.com/ugorji/go/codec
 # github.com/unknwon/com v1.0.1
 ## explicit
 github.com/unknwon/com
-# golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
+# golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
 ## explicit
 golang.org/x/crypto/argon2
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.0.0-20201020065357-d65d470038a5
+# golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 ## explicit
 golang.org/x/net/http/httpguts
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/publicsuffix
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20201018230417-eeed37f84f13
+# golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# golang.org/x/text v0.3.3
+# golang.org/x/text v0.3.4
+## explicit
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
