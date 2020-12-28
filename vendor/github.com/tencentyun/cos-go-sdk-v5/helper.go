@@ -4,10 +4,17 @@ import (
 	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 )
+
+// 单次上传文件最大为5GB
+const singleUploadMaxLength = 5 * 1024 * 1024 * 1024
 
 // 计算 md5 或 sha1 时的分块大小
 const calDigestBlockSize = 1024 * 1024 * 10
@@ -45,7 +52,7 @@ func cloneRequest(r *http.Request) *http.Request {
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
 //
 // http://www.ecma-international.org/ecma-262/6.0/#sec-uri-syntax-and-semantics
-func encodeURIComponent(s string) string {
+func encodeURIComponent(s string, excluded ...[]byte) string {
 	var b bytes.Buffer
 	written := 0
 
@@ -70,6 +77,18 @@ func encodeURIComponent(s string) string {
 			if '0' <= c && c <= '9' {
 
 				continue
+			}
+			if len(excluded) > 0 {
+				conti := false
+				for _, ch := range excluded[0] {
+					if ch == c {
+						conti = true
+						break
+					}
+				}
+				if conti {
+					continue
+				}
 			}
 		}
 
@@ -99,4 +118,37 @@ func DecodeURIComponent(s string) (string, error) {
 
 func EncodeURIComponent(s string) string {
 	return encodeURIComponent(s)
+}
+
+func GetReaderLen(reader io.Reader) (length int64, err error) {
+	switch v := reader.(type) {
+	case *bytes.Buffer:
+		length = int64(v.Len())
+	case *bytes.Reader:
+		length = int64(v.Len())
+	case *strings.Reader:
+		length = int64(v.Len())
+	case *os.File:
+		stat, ferr := v.Stat()
+		if ferr != nil {
+			err = fmt.Errorf("can't get reader length: %s", ferr.Error())
+		} else {
+			length = stat.Size()
+		}
+	case *io.LimitedReader:
+		length = int64(v.N)
+	case FixedLengthReader:
+		length = v.Size()
+	default:
+		err = fmt.Errorf("can't get reader content length, unkown reader type")
+	}
+	return
+}
+
+func CheckReaderLen(reader io.Reader) error {
+	nlen, err := GetReaderLen(reader)
+	if err != nil || nlen < singleUploadMaxLength {
+		return nil
+	}
+	return errors.New("The single object size you upload can not be larger than 5GB")
 }

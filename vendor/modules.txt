@@ -1,7 +1,7 @@
 # github.com/DataDog/zstd v1.4.5
 ## explicit
 github.com/DataDog/zstd
-# github.com/aliyun/alibaba-cloud-sdk-go v1.61.652
+# github.com/aliyun/alibaba-cloud-sdk-go v1.61.812
 ## explicit
 github.com/aliyun/alibaba-cloud-sdk-go/sdk
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
@@ -14,10 +14,10 @@ github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
 github.com/aliyun/alibaba-cloud-sdk-go/services/dysmsapi
-# github.com/aliyun/aliyun-oss-go-sdk v2.1.4+incompatible
+# github.com/aliyun/aliyun-oss-go-sdk v2.1.5+incompatible
 ## explicit
 github.com/aliyun/aliyun-oss-go-sdk/oss
-# github.com/aws/aws-sdk-go v1.35.28
+# github.com/aws/aws-sdk-go v1.36.15
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -145,7 +145,8 @@ github.com/jmespath/go-jmespath
 github.com/json-iterator/go
 # github.com/klauspost/cpuid v1.3.1
 github.com/klauspost/cpuid
-# github.com/leodido/go-urn v1.2.0
+# github.com/leodido/go-urn v1.2.1
+## explicit
 github.com/leodido/go-urn
 # github.com/magiconair/properties v1.8.4
 ## explicit
@@ -154,9 +155,10 @@ github.com/magiconair/properties
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/minio/md5-simd v1.1.0
+# github.com/minio/md5-simd v1.1.1
+## explicit
 github.com/minio/md5-simd
-# github.com/minio/minio-go/v7 v7.0.5
+# github.com/minio/minio-go/v7 v7.0.6
 ## explicit
 github.com/minio/minio-go/v7
 github.com/minio/minio-go/v7/pkg/credentials
@@ -173,7 +175,7 @@ github.com/minio/minio-go/v7/pkg/tags
 github.com/minio/sha256-simd
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
-# github.com/mitchellh/mapstructure v1.3.3
+# github.com/mitchellh/mapstructure v1.4.0
 ## explicit
 github.com/mitchellh/mapstructure
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -187,7 +189,7 @@ github.com/mozillazg/go-httpheader
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
-# github.com/qiniu/api.v7/v7 v7.6.0
+# github.com/qiniu/api.v7/v7 v7.8.0
 ## explicit
 github.com/qiniu/api.v7/v7
 github.com/qiniu/api.v7/v7/auth
@@ -201,7 +203,7 @@ github.com/qiniu/api.v7/v7/storage
 github.com/rs/xid
 # github.com/satori/go.uuid v1.2.0
 ## explicit
-# github.com/spf13/afero v1.4.1
+# github.com/spf13/afero v1.5.1
 ## explicit
 github.com/spf13/afero
 github.com/spf13/afero/mem
@@ -219,32 +221,32 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/tencentyun/cos-go-sdk-v5 v0.7.11
+# github.com/tencentyun/cos-go-sdk-v5 v0.7.16
 ## explicit
 github.com/tencentyun/cos-go-sdk-v5
 # github.com/tosone/logging v1.2.1
 ## explicit
 github.com/tosone/logging
-# github.com/ugorji/go v1.2.0
+# github.com/ugorji/go v1.2.2
 ## explicit
-# github.com/ugorji/go/codec v1.2.0
+# github.com/ugorji/go/codec v1.2.2
 github.com/ugorji/go/codec
 # github.com/unknwon/com v1.0.1
 ## explicit
 github.com/unknwon/com
-# golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
+# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 ## explicit
 golang.org/x/crypto/argon2
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+# golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 ## explicit
 golang.org/x/net/http/httpguts
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/publicsuffix
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba
+# golang.org/x/sys v0.0.0-20201223074533-0d417f636930
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
@@ -255,7 +257,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
+# golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
 ## explicit
 golang.org/x/time/rate
 # google.golang.org/protobuf v1.25.0
@@ -297,6 +299,6 @@ gopkg.in/gomail.v2
 gopkg.in/ini.v1
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2
-# gopkg.in/yaml.v2 v2.3.0
+# gopkg.in/yaml.v2 v2.4.0
 ## explicit
 gopkg.in/yaml.v2

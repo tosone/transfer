@@ -31,30 +31,34 @@ func EncodePicOperations(pic *PicOperations) string {
 }
 
 type ImageProcessResult struct {
-	XMLName       xml.Name          `xml:"UploadResult"`
-	OriginalInfo  *PicOriginalInfo  `xml:"OriginalInfo,omitempty"`
-	ProcessObject *PicProcessObject `xml:"ProcessResults>Object,omitempty"`
+	XMLName        xml.Name          `xml:"UploadResult"`
+	OriginalInfo   *PicOriginalInfo  `xml:"OriginalInfo,omitempty"`
+	ProcessResults *PicProcessObject `xml:"ProcessResults>Object,omitempty"`
 }
 type PicOriginalInfo struct {
 	Key       string        `xml:"Key,omitempty"`
 	Location  string        `xml:"Location,omitempty"`
 	ImageInfo *PicImageInfo `xml:"ImageInfo,omitempty"`
+	ETag      string        `xml:"ETag,omitempty"`
 }
 type PicImageInfo struct {
-	Format  string `xml:"Format,omitempty"`
-	Width   int    `xml:"Width,omitempty"`
-	Height  int    `xml:"Height,omitempty"`
-	Size    int    `xml:"Size,omitempty"`
-	Quality int    `xml:"Quality,omitempty"`
+	Format      string `xml:"Format,omitempty"`
+	Width       int    `xml:"Width,omitempty"`
+	Height      int    `xml:"Height,omitempty"`
+	Quality     int    `xml:"Quality,omitempty"`
+	Ave         string `xml:"Ave,omitempty"`
+	Orientation int    `xml:"Orientation,omitempty"`
 }
 type PicProcessObject struct {
-	Key      string `xml:"Key,omitempty"`
-	Location string `xml:"Location,omitempty"`
-	Format   string `xml:"Format,omitempty"`
-	Width    int    `xml:"Width,omitempty"`
-	Height   int    `xml:"Height,omitempty"`
-	Size     int    `xml:"Size,omitempty"`
-	Quality  int    `xml:"Quality,omitempty"`
+	Key             string `xml:"Key,omitempty"`
+	Location        string `xml:"Location,omitempty"`
+	Format          string `xml:"Format,omitempty"`
+	Width           int    `xml:"Width,omitempty"`
+	Height          int    `xml:"Height,omitempty"`
+	Size            int    `xml:"Size,omitempty"`
+	Quality         int    `xml:"Quality,omitempty"`
+	ETag            string `xml:"ETag,omitempty"`
+	WatermarkStatus int    `xml:"WatermarkStatus,omitempty"`
 }
 
 type picOperationsHeader struct {
@@ -171,7 +175,7 @@ type VideoAuditingJobDetail struct {
 	CreationTime  string                       `xml:",omitempty"`
 	Object        string                       `xml:",omitempty"`
 	SnapshotCount string                       `xml:",omitempty"`
-	result        int                          `xml:",omitempty"`
+	Result        int                          `xml:",omitempty"`
 	PornInfo      *RecognitionInfo             `xml:",omitempty"`
 	TerrorismInfo *RecognitionInfo             `xml:",omitempty"`
 	PoliticsInfo  *RecognitionInfo             `xml:",omitempty"`
