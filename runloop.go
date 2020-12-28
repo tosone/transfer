@@ -117,12 +117,7 @@ func TaskHandler(task database.Task) (err error) {
 	logging.Infof("download file success: %v", task.Filename)
 
 	if com.IsSliceContainsStr(viper.GetStringSlice("Notify"), "Email") {
-		if err = notify.Mail(task); err != nil {
-			return
-		}
-	}
-	if com.IsSliceContainsStr(viper.GetStringSlice("Notify"), "SMS") {
-		if err = notify.SMS(task); err != nil {
+		if err = notify.Mail(task, notify.DownloadSuccess); err != nil {
 			return
 		}
 	}

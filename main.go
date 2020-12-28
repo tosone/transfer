@@ -48,6 +48,10 @@ func Config() (err error) {
 func main() {
 	var err error
 
+	if !viper.GetBool("Debug") {
+		logging.Setting(logging.Config{LogLevel: logging.InfoLevel})
+	}
+
 	if err = Config(); err != nil {
 		logging.Fatal(err)
 	}
