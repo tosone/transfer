@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.812
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.5+incompatible
 	github.com/aws/aws-sdk-go v1.36.15
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
