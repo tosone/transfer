@@ -7,7 +7,7 @@ services:
     hostname: transfer
     restart: always
     build: $PWD
+    volumes:
+      - $PWD/config.yaml:/etc/transfer/config.yaml
     ports:
       - 3000:3000
-    volumes:
-      - $PWD:/app

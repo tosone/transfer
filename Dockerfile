@@ -14,7 +14,8 @@ FROM alpine:3.12
 WORKDIR /app
 
 COPY --from=BUILD /tmp/transfer /usr/local/bin
-COPY config.yaml /etc/transfer/
+
+RUN mkdir -p /etc/transfer
 
 VOLUME /app
 
