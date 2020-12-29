@@ -2,6 +2,7 @@ package uploader
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 
 	"github.com/minio/minio-go/v7"
@@ -19,6 +20,13 @@ func (d Minio) Upload() (err error) {
 	var endpoint = viper.GetString("minio.endpoint")
 	var accessKeyID = viper.GetString("minio.accessKeyID")
 	var secretAccessKey = viper.GetString("minio.secretAccessKey")
+
+	if endpoint == "" ||
+		accessKeyID == "" ||
+		secretAccessKey == "" {
+		err = fmt.Errorf("config is not correct")
+		return
+	}
 
 	var client *minio.Client
 	if client, err = minio.New(endpoint, &minio.Options{

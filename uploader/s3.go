@@ -1,6 +1,7 @@
 package uploader
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,8 +18,16 @@ type S3 struct {
 
 // Upload ..
 func (d S3) Upload() (err error) {
+	if viper.GetString("s3.region") == "" ||
+		viper.GetString("s3.accessKeyID") == "" ||
+		viper.GetString("s3.secretAccessKey") == "" ||
+		viper.GetString("s3.bucket") == "" {
+		err = fmt.Errorf("config is not correct")
+		return
+	}
+
 	var config = &aws.Config{
-		Region: aws.String("s3.region"),
+		Region: aws.String(viper.GetString("s3.region")),
 		Credentials: credentials.NewStaticCredentials(
 			viper.GetString("s3.accessKeyID"),
 			viper.GetString("s3.secretAccessKey"),

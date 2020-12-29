@@ -17,6 +17,14 @@ type Qiniu struct {
 
 // Upload ..
 func (d Qiniu) Upload() (err error) {
+	if viper.GetString("qiniu.bucket") == "" ||
+		viper.GetString("qiniu.accessKey") == "" ||
+		viper.GetString("qiniu.secretKey") == "" ||
+		viper.GetString("qiniu.region") == "" {
+		err = fmt.Errorf("config is not correct")
+		return
+	}
+
 	var putPolicy = storage.PutPolicy{
 		Scope: viper.GetString("qiniu.bucket"),
 	}

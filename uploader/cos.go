@@ -2,6 +2,7 @@ package uploader
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -17,6 +18,13 @@ type COS struct {
 
 // Upload ..
 func (d COS) Upload() (err error) {
+	if viper.GetString("COS.region") == "" ||
+		viper.GetString("COS.secretId") == "" ||
+		viper.GetString("COS.secretKey") == "" {
+		err = fmt.Errorf("config is not correct")
+		return
+	}
+
 	var u *url.URL
 	if u, err = url.Parse(viper.GetString("COS.region")); err != nil {
 		return
