@@ -8,9 +8,6 @@ import (
 )
 
 type Counter struct {
-	length  int64
-	current int64
-
 	Percent float64
 }
 

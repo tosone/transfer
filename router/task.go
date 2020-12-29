@@ -46,7 +46,6 @@ func Task(app *gin.Engine) (err error) {
 			}
 		}
 		ctx.JSON(http.StatusOK, tasks)
-		return
 	})
 
 	app.GET("/task/:name", func(ctx *gin.Context) {
@@ -60,7 +59,6 @@ func Task(app *gin.Engine) (err error) {
 			return
 		}
 		ctx.JSON(http.StatusOK, task)
-		return
 	})
 
 	app.POST("/task", func(ctx *gin.Context) {
@@ -107,7 +105,6 @@ func Task(app *gin.Engine) (err error) {
 			return
 		}
 		ctx.JSON(http.StatusOK, task)
-		return
 	})
 
 	return

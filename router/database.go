@@ -59,7 +59,6 @@ func Database(app *gin.Engine) (err error) {
 			_ = ctx.Error(errServerInternal.Build(err))
 			return
 		}
-		return
 	})
 	return
 }

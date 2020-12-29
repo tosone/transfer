@@ -32,11 +32,6 @@ func errorHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.Next()
 
-		var errorMessages []string
-		for _, err := range ctx.Errors {
-			errorMessages = append(errorMessages, err.Error())
-		}
-
 		if len(ctx.Errors) > 0 {
 			if ctx.Errors[0].IsType(gin.ErrorTypePrivate) {
 				ctx.JSON(ctx.Errors[0].Err.(ErrBody).Code, ctx.Errors[0].JSON())
