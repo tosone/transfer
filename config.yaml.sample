@@ -1,21 +1,21 @@
-Debug: true
+Debug: true                  # 是否启用 Debug 模式
 
-Prefix:
-DatabaseDir: ./data
+Prefix:                      # 上传到的云存储的域名前缀
+DatabaseDir: ./data          # 数据库所在目录
 
-Notify: []
+Notify:
+    - Email                  # 选择的通知方式
 
 Config:
-    ParallelTask: 4
+    ParallelTask: 4          # 同时执行的任务数
 
-Email:
-    from:
-    to:
-    host:
-    port:
-    username:
-    password:
-    subject:
+Email:                       # Email 的配置项
+    from:                    # 显示的邮件发送方
+    to:                      # 发送邮件的对象
+    host:                    # 邮箱的 Host
+    port:                    # 邮箱的 port
+    username:                # 邮箱登陆的 username
+    password:                # 邮箱登陆的 password
 
 qiniu:
     accessKey:
