@@ -97,6 +97,9 @@ func Task(app *gin.Engine) (err error) {
 				return
 			}
 		}
+		if task.DownloadType == "" {
+			task.DownloadType = "simple"
+		}
 		prefix.Path = filepath.Join(task.Path, task.Filename)
 		task.DownloadURL = prefix.String()
 		task.Status = database.PendingStatus
