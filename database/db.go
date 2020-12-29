@@ -28,18 +28,20 @@ const (
 )
 
 type Task struct {
-	Name           string  `json:"name"`
-	UploadType     string  `json:"uploadType"`
-	URL            string  `json:"url"`
-	DownloadType   string  `json:"downloadType"`
-	DownloadURL    string  `json:"downloadUrl"` // user can download file from this url
-	Filename       string  `json:"filename"`
-	RandomFilename bool    `json:"randomFilename"`
-	Path           string  `json:"path"`
-	Force          bool    `json:"force"`
-	Progress       float64 `json:"progress"`
-	Status         Status  `json:"status"`
-	Message        string  `json:"message"`
+	Name           string    `json:"name"`
+	UploadType     string    `json:"uploadType"`
+	URL            string    `json:"url"`
+	DownloadType   string    `json:"downloadType"`
+	DownloadURL    string    `json:"downloadUrl"` // user can download file from this url
+	Filename       string    `json:"filename"`
+	RandomFilename bool      `json:"randomFilename"`
+	Path           string    `json:"path"`
+	Force          bool      `json:"force"`
+	Progress       float64   `json:"progress"`
+	Status         Status    `json:"status"`
+	Message        string    `json:"message"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
 var dbEngine *badger.DB
@@ -100,6 +102,7 @@ func (t *Task) UpdateStatus(status Status) (err error) {
 	}()
 
 	t.Status = status
+	t.UpdatedAt = time.Now()
 
 	var data []byte
 	if data, err = json.Marshal(*t); err != nil {
@@ -137,6 +140,7 @@ func GetTaskByName(name string) (task Task, err error) {
 
 // GetTaskByURL ..
 func GetTaskByURL(url string) (task Task, err error) {
+	var exist = false
 	if err = dbEngine.View(func(txn *badger.Txn) (err error) {
 		var iter = txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
@@ -150,6 +154,7 @@ func GetTaskByURL(url string) (task Task, err error) {
 				return
 			}
 			if task.URL == url {
+				exist = true
 				return
 			}
 		}
@@ -157,7 +162,9 @@ func GetTaskByURL(url string) (task Task, err error) {
 	}); err != nil {
 		return
 	}
-	err = badger.ErrKeyNotFound
+	if !exist {
+		err = badger.ErrKeyNotFound
+	}
 	return
 }
 

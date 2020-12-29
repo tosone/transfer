@@ -21,7 +21,7 @@ func Task(app *gin.Engine) (err error) {
 		return
 	}
 
-	app.GET("/task", func(ctx *gin.Context) {
+	app.GET("/tasks", func(ctx *gin.Context) {
 		var tasks []database.Task
 		var status = database.Status(ctx.Query("status"))
 		if status != "" {
@@ -48,7 +48,7 @@ func Task(app *gin.Engine) (err error) {
 		ctx.JSON(http.StatusOK, tasks)
 	})
 
-	app.GET("/task/:name", func(ctx *gin.Context) {
+	app.GET("/tasks/:name", func(ctx *gin.Context) {
 		var task database.Task
 		if task, err = database.GetTaskByName(ctx.Param("name")); err != nil {
 			_ = ctx.Error(errDatabase.Build(err))
@@ -61,7 +61,7 @@ func Task(app *gin.Engine) (err error) {
 		ctx.JSON(http.StatusOK, task)
 	})
 
-	app.POST("/task", func(ctx *gin.Context) {
+	app.POST("/tasks", func(ctx *gin.Context) {
 		var task = &database.Task{}
 		if err = ctx.Bind(task); err != nil {
 			_ = ctx.Error(errBadRequest.Build(err))
@@ -85,14 +85,18 @@ func Task(app *gin.Engine) (err error) {
 			}
 			var filename = fmt.Sprintf("%s-%s%s", now, name, ext)
 			task.Filename = filename
+		} else if task.Filename == "" {
+			_ = ctx.Error(errBadRequest.Build("set filename to upload"))
+			return
 		}
-		if !task.Force {
-			if _, err = database.GetTaskByURL(task.URL); err != nil {
-				if err != badger.ErrKeyNotFound {
-					return
-				}
-				err = nil
-			} else {
+
+		if _, err = database.GetTaskByURL(task.URL); err != nil {
+			if err != badger.ErrKeyNotFound {
+				return
+			}
+			err = nil
+		} else {
+			if !task.Force {
 				_ = ctx.Error(errBadRequest.Build(errURLConflict.Build(task.URL)))
 				return
 			}
@@ -103,6 +107,8 @@ func Task(app *gin.Engine) (err error) {
 		prefix.Path = filepath.Join(task.Path, task.Filename)
 		task.DownloadURL = prefix.String()
 		task.Status = database.PendingStatus
+		task.CreatedAt = time.Now()
+		task.UpdatedAt = time.Now()
 		if err = task.Insert(); err != nil {
 			_ = ctx.Error(errDatabase.Build(err))
 			return
